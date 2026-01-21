@@ -1,0 +1,39 @@
+# Dr. Oz Health Facts - Robots.txt
+# Allow all search engines to crawl the site
+
+User-agent: *
+Allow: /
+
+# Disallow admin or private pages (if any in future)
+# Disallow: /admin/
+# Disallow: /private/
+
+# Allow specific important pages
+Allow: /articles
+Allow: /health-topics
+Allow: /health-tools
+Allow: /article/*
+Allow: /category/*
+
+# Sitemap location
+Sitemap: https://drozhealthfacts.com/sitemap.xml
+
+# Crawl-delay (optional, helps prevent server overload)
+# Crawl-delay: 1
+
+# Specific rules for different bots
+User-agent: Googlebot
+Allow: /
+
+User-agent: Googlebot-Image
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Block bad bots (optional)
+User-agent: AhrefsBot
+Crawl-delay: 10
+
+User-agent: SemrushBot
+Crawl-delay: 10

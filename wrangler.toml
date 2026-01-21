@@ -1,0 +1,21 @@
+# Cloudflare Pages Configuration
+name = "drozhealthfacts"
+compatibility_date = "2024-01-01"
+
+[build]
+command = "npm run build"
+cwd = "."
+publish = "dist"
+
+[build.environment_variables]
+NODE_VERSION = "18"
+
+# SPA routing configuration
+[[redirects]]
+from = "/*"
+to = "/index.html"
+status = 200
+
+# Optional: Environment variables for production
+# [env.production.vars]
+# GEMINI_API_KEY = "your-production-api-key"

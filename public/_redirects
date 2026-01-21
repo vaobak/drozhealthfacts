@@ -1,0 +1,5 @@
+# Cloudflare Pages SPA Redirects
+# This file ensures all routes redirect to index.html for React Router
+
+# Handle all routes for SPA
+/*    /index.html   200

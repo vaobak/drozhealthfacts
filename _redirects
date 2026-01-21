@@ -1,0 +1,15 @@
+# Cloudflare Pages SPA Redirects
+# This file ensures all routes redirect to index.html for React Router
+
+# Handle all routes for SPA
+/*    /index.html   200
+
+# Optional: Redirect www to non-www (if needed)
+# https://www.drozhealthfacts.com/*  https://drozhealthfacts.com/:splat  301!
+
+# Security headers (optional)
+/*
+  X-Frame-Options: DENY
+  X-Content-Type-Options: nosniff
+  X-XSS-Protection: 1; mode=block
+  Referrer-Policy: strict-origin-when-cross-origin

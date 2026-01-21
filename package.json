@@ -1,0 +1,44 @@
+{
+  "name": "dr.-oz-health-facts-clone",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "generate-from-json": "node scripts/generate-constants-from-json.js",
+    "convert-md-to-json": "node scripts/convert-md-to-json.js",
+    "generate-constants": "node scripts/generate-constants-from-md.js",
+    "generate-metadata": "node scripts/generate-metadata-only.js",
+    "fix-frontmatter": "node scripts/fix-frontmatter.js",
+    "prebuild": "npm run generate-from-json && npm run generate-sitemap",
+    "postbuild": "cp _redirects dist/ 2>/dev/null || true"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "react-helmet-async": "^2.0.5",
+    "react-markdown": "^10.1.0",
+    "react-router-dom": "^7.12.0",
+    "rehype-raw": "^7.0.0",
+    "rehype-sanitize": "^6.0.0",
+    "remark-gfm": "^4.0.1",
+    "vite-plugin-markdown": "^2.2.0",
+    "web-vitals": "^5.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@types/react": "^19.2.7",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.17",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
