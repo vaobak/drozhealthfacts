@@ -41,7 +41,7 @@ export const Home: React.FC = () => {
               
               {/* Doctor Image Placeholder */}
               <img 
-                src="https://picsum.photos/id/1005/500/600" 
+                src="/public/droz.png" 
                 alt="Doctor" 
                 className="relative z-10 w-full max-w-sm rounded-xl shadow-2xl object-cover h-[500px]"
                 style={{objectPosition: "top"}}
