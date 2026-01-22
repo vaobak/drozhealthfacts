@@ -46,13 +46,17 @@ function getArticleSlugs() {
     const constantsPath = path.join(__dirname, '..', 'constants.ts');
     const constantsContent = fs.readFileSync(constantsPath, 'utf8');
     
-    // Extract slugs using regex
+    // Extract article slugs only (not category slugs)
     const slugMatches = constantsContent.match(/slug: '([^']+)'/g);
     if (!slugMatches) return [];
     
     return slugMatches
       .map(match => match.replace(/slug: '([^']+)'/, '$1'))
-      .filter(slug => !slug.includes('nutrition-diet') && !slug.includes('fitness') && !slug.includes('mental-health')); // Filter out category slugs
+      .filter(slug => {
+        // Filter out category slugs - only keep article slugs
+        const categorySlugPattern = /^(nutrition-diet|fitness|mental-health|heart-health|sleep|prevention|general-health|health-conditions|lifestyle-wellness)$/;
+        return !categorySlugPattern.test(slug);
+      });
   } catch (error) {
     console.error('Error reading constants.ts:', error);
     return [];
@@ -115,7 +119,7 @@ function generateSitemap() {
     xml += '  </url>\n';
   });
 
-  // Categories
+  // Categories - ONLY /category/ URLs (these have actual pages)
   CATEGORIES.forEach(category => {
     xml += '  <url>\n';
     xml += `    <loc>${BASE_URL}/category/${category}</loc>\n`;
@@ -125,7 +129,7 @@ function generateSitemap() {
     xml += '  </url>\n';
   });
 
-  // Articles - Dynamic from constants.ts
+  // Articles - Only real article slugs (these have actual pages)
   ARTICLE_SLUGS.forEach(slug => {
     xml += '  <url>\n';
     xml += `    <loc>${BASE_URL}/${slug}</loc>\n`;
@@ -155,8 +159,8 @@ console.log(`📁 Location: ${sitemapPath}`);
 console.log(`📊 Total URLs: ${totalUrls}`);
 console.log(`   - Static pages: 6`);
 console.log(`   - Health tools: ${HEALTH_TOOLS.length}`);
-console.log(`   - Categories: ${CATEGORIES.length}`);
-console.log(`   - Articles: ${ARTICLE_SLUGS.length}`);
+console.log(`   - Categories: ${CATEGORIES.length} (all /category/ URLs)`);
+console.log(`   - Articles: ${ARTICLE_SLUGS.length} (real article pages)`);
 console.log(`🌐 Base URL: ${BASE_URL}`);
 console.log(`📅 Last Modified: ${CURRENT_DATE}`);
 console.log('\n💡 Tip: Run this script whenever you add new articles or pages');
@@ -167,3 +171,7 @@ console.log(`   - Health Tools: ${BASE_URL}/health-tools`);
 console.log(`   - BMI Calculator: ${BASE_URL}/bmi-calculator`);
 console.log(`   - Sample Article: ${BASE_URL}/${ARTICLE_SLUGS[0] || 'article-slug'}`);
 console.log(`   - Sample Category: ${BASE_URL}/category/${CATEGORIES[0] || 'category-slug'}`);
+console.log('\n🚫 Removed invalid URLs:');
+console.log('   - Direct category URLs (e.g., /general-health)');
+console.log('   - Duplicate entries');
+console.log('   - Non-existent pages');
