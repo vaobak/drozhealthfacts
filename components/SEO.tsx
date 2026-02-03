@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Helmet } from 'react-helmet-async';
+import { useLocation } from 'react-router-dom';
 
 interface SEOProps {
   title?: string;
@@ -14,10 +15,15 @@ export const SEO: React.FC<SEOProps> = ({
   title = 'Dr. Oz Health Facts - Trusted Health Information & Wellness Tips',
   description = 'Get evidence-based health information from Dr. Oz. Learn about nutrition, fitness, mental health, disease prevention, and more to live a healthier life.',
   keywords = 'Dr. Oz, health tips, wellness, nutrition, fitness, mental health, disease prevention, healthy living',
-  ogImage = 'https://picsum.photos/id/1005/1200/630',
+  ogImage = 'https://drozhealthfacts.com/apple-touch-icon.png',
   ogType = 'website',
-  canonicalUrl = 'https://drozhealthfacts.com'
+  canonicalUrl
 }) => {
+  const location = useLocation();
+  
+  // Generate canonical URL based on current location if not provided
+  const currentCanonical = canonicalUrl || `https://drozhealthfacts.com${location.pathname}`;
+  
   useEffect(() => {
     // Update title
     document.title = title;
@@ -45,7 +51,7 @@ export const SEO: React.FC<SEOProps> = ({
     updateMetaTag('og:description', description, true);
     updateMetaTag('og:image', ogImage, true);
     updateMetaTag('og:type', ogType, true);
-    updateMetaTag('og:url', canonicalUrl, true);
+    updateMetaTag('og:url', currentCanonical, true);
     
     // Twitter Card tags
     updateMetaTag('twitter:card', 'summary_large_image');
@@ -53,18 +59,29 @@ export const SEO: React.FC<SEOProps> = ({
     updateMetaTag('twitter:description', description);
     updateMetaTag('twitter:image', ogImage);
     
-    // Canonical URL
+    // Canonical URL - FIXED
     let canonical = document.querySelector('link[rel="canonical"]') as HTMLLinkElement;
     if (!canonical) {
       canonical = document.createElement('link');
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }
-    canonical.href = canonicalUrl;
-  }, [title, description, keywords, ogImage, ogType, canonicalUrl]);
+    canonical.href = currentCanonical;
+    
+    // Remove any duplicate canonical tags
+    const allCanonicals = document.querySelectorAll('link[rel="canonical"]');
+    if (allCanonicals.length > 1) {
+      for (let i = 1; i < allCanonicals.length; i++) {
+        allCanonicals[i].remove();
+      }
+    }
+  }, [title, description, keywords, ogImage, ogType, currentCanonical]);
 
   return (
     <Helmet>
+      {/* Canonical URL in Helmet */}
+      <link rel="canonical" href={currentCanonical} />
+      
       {/* Organization Schema - Global */}
       <script type="application/ld+json">
         {JSON.stringify({
@@ -72,7 +89,7 @@ export const SEO: React.FC<SEOProps> = ({
           "@type": "Organization",
           "name": "Dr. Oz Health Facts",
           "url": "https://drozhealthfacts.com",
-          "logo": "https://drozhealthfacts.com/logo.png",
+          "logo": "https://drozhealthfacts.com/apple-touch-icon.png",
           "description": "Trusted source for evidence-based health information, wellness tips, and medical advice from Dr. Oz.",
           "sameAs": [
             "https://www.facebook.com/DrOzHealthFacts",
