@@ -1,0 +1,28 @@
+# Important URLs for prerendering/static generation
+https://drozhealthfacts.com/
+https://drozhealthfacts.com/health-tools
+https://drozhealthfacts.com/articles
+https://drozhealthfacts.com/health-topics
+https://drozhealthfacts.com/about
+https://drozhealthfacts.com/contact
+
+# Top Health Calculators
+https://drozhealthfacts.com/bmi-calculator
+https://drozhealthfacts.com/ovulation-calculator
+https://drozhealthfacts.com/body-fat-calculator
+https://drozhealthfacts.com/calorie-calculator
+https://drozhealthfacts.com/ideal-weight-calculator
+https://drozhealthfacts.com/protein-intake-calculator
+
+# Top Categories
+https://drozhealthfacts.com/category/nutrition-diet
+https://drozhealthfacts.com/category/fitness
+https://drozhealthfacts.com/category/mental-health
+https://drozhealthfacts.com/category/heart-health
+
+# Top Articles
+https://drozhealthfacts.com/keto-diet-complete-guide
+https://drozhealthfacts.com/boost-immune-system-naturally
+https://drozhealthfacts.com/lose-belly-fat-fast
+https://drozhealthfacts.com/best-foods-weight-loss
+https://drozhealthfacts.com/intermittent-fasting-guide

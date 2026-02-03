@@ -14,7 +14,16 @@
     <meta name="description" content="Get evidence-based health information from Dr. Oz. Learn about nutrition, fitness, mental health, disease prevention, and more to live a healthier life." />
     <meta name="keywords" content="Dr. Oz, health tips, wellness, nutrition, fitness, mental health, disease prevention, healthy living" />
     <meta name="author" content="Dr. Oz Health Team" />
-    <meta name="robots" content="index, follow" />
+    <meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    <meta name="bingbot" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1" />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="language" content="en" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+    <meta name="referrer" content="no-referrer-when-downgrade" />
     
     <!-- Preconnect to external domains for faster loading -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -40,27 +49,80 @@
     
     <title>Dr. Oz Health Facts - Trusted Health Information & Wellness Tips</title>
     
-    <!-- Structured Data -->
+    <!-- Enhanced Structured Data -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       "name": "Dr. Oz Health Facts",
+      "alternateName": "Dr Oz Health Facts",
       "url": "https://drozhealthfacts.com",
       "description": "Evidence-based health information and wellness tips from Dr. Oz",
+      "inLanguage": "en-US",
+      "isAccessibleForFree": true,
       "publisher": {
         "@type": "Organization",
         "name": "Dr. Oz Health Team",
         "logo": {
           "@type": "ImageObject",
-          "url": "https://drozhealthfacts.com/apple-touch-icon.png"
+          "url": "https://drozhealthfacts.com/apple-touch-icon.png",
+          "width": 180,
+          "height": 180
         }
       },
       "potentialAction": {
         "@type": "SearchAction",
-        "target": "https://drozhealthfacts.com/search?q={search_term_string}",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://drozhealthfacts.com/search?q={search_term_string}"
+        },
         "query-input": "required name=search_term_string"
+      },
+      "mainEntity": {
+        "@type": "ItemList",
+        "name": "Health Topics",
+        "description": "Comprehensive health information covering nutrition, fitness, mental health, and disease prevention",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Health Tools",
+            "url": "https://drozhealthfacts.com/health-tools"
+          },
+          {
+            "@type": "ListItem", 
+            "position": 2,
+            "name": "Health Articles",
+            "url": "https://drozhealthfacts.com/articles"
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": "Health Topics",
+            "url": "https://drozhealthfacts.com/health-topics"
+          }
+        ]
       }
+    }
+    </script>
+    
+    <!-- Medical Organization Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "MedicalOrganization",
+      "name": "Dr. Oz Health Facts",
+      "url": "https://drozhealthfacts.com",
+      "logo": "https://drozhealthfacts.com/apple-touch-icon.png",
+      "description": "Trusted source for evidence-based health information, wellness tips, and medical advice",
+      "medicalSpecialty": [
+        "General Medicine",
+        "Preventive Medicine", 
+        "Nutrition",
+        "Wellness"
+      ],
+      "areaServed": "Worldwide",
+      "availableLanguage": "English"
     }
     </script>
     

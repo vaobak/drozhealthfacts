@@ -1,0 +1,32 @@
+# Dr. Oz Health Facts - Indexing Information
+
+## Site Information
+Domain: https://drozhealthfacts.com
+Type: Single Page Application (SPA) - React
+Content: Health information, calculators, and wellness articles
+
+## Key Pages for Indexing Priority:
+1. Homepage: https://drozhealthfacts.com/
+2. Health Tools: https://drozhealthfacts.com/health-tools
+3. Articles: https://drozhealthfacts.com/articles
+4. Health Topics: https://drozhealthfacts.com/health-topics
+
+## Content Categories:
+- 29 Health Articles (evidence-based)
+- 24 Health Calculators (interactive tools)
+- 9 Health Categories
+- Static pages (About, Contact)
+
+## SEO Features:
+- Complete meta tags
+- Structured data (Schema.org)
+- XML sitemap with 68 URLs
+- Internal linking structure
+- Mobile responsive
+- Fast loading times
+
+## Technical Notes:
+- React SPA with client-side routing
+- All content is dynamically rendered
+- Uses React Router for navigation
+- Optimized for search engines with proper meta tags
