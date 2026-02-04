@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { CloudAffiliateManager } from '../utils/cloudAffiliateManager';
 import { AffiliateManager } from '../utils/affiliateManager';
 import { AuthManager } from '../utils/authManager';
 import { AffiliateLink } from '../types';
@@ -49,25 +50,45 @@ export const AdminDashboard: React.FC = () => {
     autoRedirect: true
   });
 
-  // Data loading function
-  const loadData = () => {
+  // Data loading function with fallback
+  const loadData = async () => {
     try {
       console.log('Loading affiliate data...');
-      const links = AffiliateManager.getAffiliateLinks();
-      const statistics = AffiliateManager.getStatsSummary();
-      console.log('Loaded links:', links.length);
-      console.log('Loaded stats:', statistics);
+      
+      // Try cloud first, fallback to local if needed
+      let links: AffiliateLink[] = [];
+      let statistics: any = {};
+      
+      try {
+        links = await CloudAffiliateManager.getAffiliateLinks();
+        statistics = await CloudAffiliateManager.getStatsSummary();
+        console.log('Loaded from cloud:', links.length, 'links');
+      } catch (cloudError) {
+        console.warn('Cloud unavailable, using local storage:', cloudError);
+        links = AffiliateManager.getAffiliateLinks();
+        statistics = AffiliateManager.getStatsSummary();
+        console.log('Loaded from local:', links.length, 'links');
+      }
+      
       setAffiliateLinks(links);
       setStats(statistics);
     } catch (error) {
       console.error('Error loading affiliate data:', error);
+      // Final fallback to empty state
+      setAffiliateLinks([]);
+      setStats({
+        totalLinks: 0,
+        activeLinks: 0,
+        totalClicks: 0,
+        clicksLast30Days: 0
+      });
     }
   };
 
   // Check authentication on component mount
   useEffect(() => {
     console.log('AdminDashboard mounted, checking auth...');
-    const checkAuth = () => {
+    const checkAuth = async () => {
       try {
         const authenticated = AuthManager.isAuthenticated();
         console.log('Authentication status:', authenticated);
@@ -76,7 +97,7 @@ export const AdminDashboard: React.FC = () => {
         
         if (authenticated) {
           console.log('User authenticated, loading data...');
-          loadData();
+          await loadData();
         }
       } catch (error) {
         console.error('Auth check error:', error);
@@ -88,16 +109,23 @@ export const AdminDashboard: React.FC = () => {
     checkAuth();
     
     // Check auth status periodically (every minute)
-    const authInterval = setInterval(checkAuth, 60000);
+    const authInterval = setInterval(() => {
+      const authenticated = AuthManager.isAuthenticated();
+      if (!authenticated && isAuthenticated) {
+        setIsAuthenticated(false);
+        setAffiliateLinks([]);
+        setStats(null);
+      }
+    }, 60000);
     
     return () => clearInterval(authInterval);
   }, []);
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     console.log('Login successful, setting authenticated state...');
     setIsAuthenticated(true);
     setIsLoading(false);
-    loadData();
+    await loadData();
   };
 
   const handleLogout = () => {
@@ -112,7 +140,7 @@ export const AdminDashboard: React.FC = () => {
     setEditingLink(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
@@ -123,15 +151,15 @@ export const AdminDashboard: React.FC = () => {
       };
 
       if (editingLink) {
-        AffiliateManager.updateAffiliateLink(editingLink.id, linkData);
+        await CloudAffiliateManager.updateAffiliateLink(editingLink.id, linkData);
         console.log('Updated affiliate link:', editingLink.id);
       } else {
-        AffiliateManager.addAffiliateLink(linkData);
+        await CloudAffiliateManager.addAffiliateLink(linkData);
         console.log('Added new affiliate link:', linkData.slug);
       }
 
       resetForm();
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error saving affiliate link:', error);
     }
@@ -179,23 +207,23 @@ export const AdminDashboard: React.FC = () => {
     setShowAddForm(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this affiliate link?')) {
       try {
-        AffiliateManager.deleteAffiliateLink(id);
+        await CloudAffiliateManager.deleteAffiliateLink(id);
         console.log('Deleted affiliate link:', id);
-        loadData();
+        await loadData();
       } catch (error) {
         console.error('Error deleting affiliate link:', error);
       }
     }
   };
 
-  const toggleActive = (id: string, currentStatus: boolean) => {
+  const toggleActive = async (id: string, currentStatus: boolean) => {
     try {
-      AffiliateManager.updateAffiliateLink(id, { isActive: !currentStatus });
+      await CloudAffiliateManager.updateAffiliateLink(id, { isActive: !currentStatus });
       console.log('Toggled active status for link:', id);
-      loadData();
+      await loadData();
     } catch (error) {
       console.error('Error toggling active status:', error);
     }

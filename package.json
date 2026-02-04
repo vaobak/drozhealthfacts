@@ -14,9 +14,10 @@
     "generate-metadata": "node scripts/generate-metadata-only.js",
     "fix-frontmatter": "node scripts/fix-frontmatter.js",
     "prebuild": "npm run generate-from-json && npm run generate-sitemap",
-    "postbuild": "cp _redirects dist/ 2>/dev/null || true"
+    "postbuild": "cp _redirects dist/ 2>/dev/null || copy _redirects dist\\ 2>nul || true"
   },
   "dependencies": {
+    "firebase": "^12.8.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.562.0",
     "react": "^19.2.3",

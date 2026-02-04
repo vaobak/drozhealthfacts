@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { CloudAffiliateManager } from '../utils/cloudAffiliateManager';
 import { AffiliateManager } from '../utils/affiliateManager';
 import { AffiliateLink } from '../types';
 import { SEO } from './SEO';
@@ -19,38 +20,65 @@ export const AffiliateRedirect: React.FC = () => {
       return;
     }
 
-    // Find affiliate link
-    const link = AffiliateManager.getAffiliateLinkBySlug(slug);
-    
-    if (!link) {
-      navigate('/', { replace: true });
-      return;
-    }
+    const loadAffiliateLink = async () => {
+      // Find affiliate link with fallback
+      let link: AffiliateLink | null = null;
+      
+      try {
+        link = await CloudAffiliateManager.getAffiliateLinkBySlug(slug);
+      } catch (cloudError) {
+        console.warn('Cloud unavailable, using local storage:', cloudError);
+        link = AffiliateManager.getAffiliateLinkBySlug(slug);
+      }
+      
+      if (!link) {
+        navigate('/', { replace: true });
+        return;
+      }
 
-    setAffiliateLink(link);
+      setAffiliateLink(link);
 
-    // Track the click
-    AffiliateManager.trackClick(
-      link.id,
-      navigator.userAgent,
-      document.referrer
-    );
+      // Track the click with fallback
+      try {
+        await CloudAffiliateManager.trackClick(
+          link.id,
+          navigator.userAgent,
+          document.referrer
+        );
+      } catch (trackError) {
+        console.warn('Cloud tracking failed, using local:', trackError);
+        AffiliateManager.trackClick(
+          link.id,
+          navigator.userAgent,
+          document.referrer
+        );
+      }
 
-    // Start countdown only if autoRedirect is enabled
-    if (link.autoRedirect) {
-      const timer = setInterval(() => {
-        setCountdown(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleRedirect(link.destinationUrl);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      // Handle redirect based on type
+      if (link.redirectType === 'direct') {
+        // Direct redirect - immediate redirect
+        handleRedirect(link.destinationUrl);
+        return;
+      }
 
-      return () => clearInterval(timer);
-    }
+      // Landing page - start countdown only if autoRedirect is enabled
+      if (link.autoRedirect) {
+        const timer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              handleRedirect(link.destinationUrl);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+
+        return () => clearInterval(timer);
+      }
+    };
+
+    loadAffiliateLink();
   }, [slug, navigate]);
 
   const handleRedirect = (url: string) => {

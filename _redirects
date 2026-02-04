@@ -1,13 +1,50 @@
-# Cloudflare Pages SPA Redirects
-# This file ensures all routes redirect to index.html for React Router
+# Cloudflare Pages Redirects for Dr. Oz Health Facts
 
-# Handle all routes for SPA
-/*    /index.html   200
+# Affiliate dashboard routes
+/affiliate/* /index.html 200
+/admin/* /affiliate 301
 
-# Optional: Redirect www to non-www (if needed)
-# https://www.drozhealthfacts.com/*  https://drozhealthfacts.com/:splat  301!
+# Health tools routes
+/bmi-calculator /index.html 200
+/calorie-calculator /index.html 200
+/heart-rate-calculator /index.html 200
+/protein-intake-calculator /index.html 200
+/water-intake-calculator /index.html 200
+/sleep-calculator /index.html 200
+/body-fat-calculator /index.html 200
+/ovulation-calculator /index.html 200
+/ideal-weight-calculator /index.html 200
+/bmr-calculator /index.html 200
+/tdee-calculator /index.html 200
+/macro-calculator /index.html 200
+/caffeine-calculator /index.html 200
+/blood-pressure-tracker /index.html 200
+/symptom-checker /index.html 200
+/drug-interaction-checker /index.html 200
+/calorie-counter /index.html 200
+/workout-planner /index.html 200
+/medication-reminder /index.html 200
+/health-risk-assessment /index.html 200
+/lab-results-interpreter /index.html 200
+/heart-rate-zone-calculator /index.html 200
+/diabetes-risk-calculator /index.html 200
+/pregnancy-due-date-calculator /index.html 200
 
-# Security headers (optional)
+# Static pages
+/health-tools /index.html 200
+/articles /index.html 200
+/topics /index.html 200
+/about /index.html 200
+/contact /index.html 200
+/search /index.html 200
+
+# Category pages
+/category/* /index.html 200
+
+# Handle all routes for SPA (catch-all)
+/* /index.html 200
+
+# Security headers
 /*
   X-Frame-Options: DENY
   X-Content-Type-Options: nosniff
