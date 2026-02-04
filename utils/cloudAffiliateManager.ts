@@ -65,52 +65,39 @@ export class CloudAffiliateManager {
 
   // Get all affiliate links from cloud database
   static async getAffiliateLinks(): Promise<AffiliateLink[]> {
-    // If cloud sync is disabled, use local storage only
-    if (!this.isCloudEnabled) {
-      return this.getLocalAffiliateLinks();
-    }
-
     try {
+      console.log('Fetching all affiliate links from cloud database');
       const response = await this.apiRequest<AffiliateLink[]>('/affiliate-links');
       
       if (response.success && response.data) {
+        console.log('Cloud affiliate links loaded:', response.data.length, 'links');
         return response.data;
       }
 
-      // Fallback to localStorage if cloud fails and fallback is enabled
-      if (this.fallbackToLocal) {
-        console.warn('Cloud database unavailable, falling back to localStorage');
-        return this.getLocalAffiliateLinks();
-      }
-
+      console.log('No affiliate links found in cloud database');
       return [];
     } catch (error) {
       console.error('Error fetching affiliate links from cloud:', error);
-      
-      if (this.fallbackToLocal) {
-        return this.getLocalAffiliateLinks();
-      }
-      
-      return [];
+      throw error; // Don't fallback, throw error
     }
   }
 
   // Get affiliate link by slug from cloud
   static async getAffiliateLinkBySlug(slug: string): Promise<AffiliateLink | null> {
     try {
+      console.log('Fetching affiliate link by slug from cloud:', slug);
       const response = await this.apiRequest<AffiliateLink>(`/affiliate-links/slug/${slug}`);
       
       if (response.success && response.data) {
+        console.log('Cloud affiliate link found:', response.data);
         return response.data;
       }
 
-      // Fallback to localStorage
-      const localLinks = this.getLocalAffiliateLinks();
-      return localLinks.find(link => link.slug === slug && link.isActive) || null;
+      console.log('Affiliate link not found in cloud database');
+      return null;
     } catch (error) {
-      console.error('Error fetching affiliate link by slug:', error);
-      const localLinks = this.getLocalAffiliateLinks();
-      return localLinks.find(link => link.slug === slug && link.isActive) || null;
+      console.error('Error fetching affiliate link by slug from cloud:', error);
+      throw error; // Don't fallback, throw error to be handled by caller
     }
   }
 
@@ -206,6 +193,7 @@ export class CloudAffiliateManager {
   // Track click in cloud database
   static async trackClick(linkId: string, userAgent: string, referrer: string): Promise<void> {
     try {
+      console.log('Tracking click in cloud database for link:', linkId);
       const clickData = {
         linkId,
         timestamp: new Date().toISOString(),
@@ -216,27 +204,29 @@ export class CloudAffiliateManager {
         converted: false
       };
 
-      // Track in cloud
+      // Track in cloud only
       const response = await this.apiRequest('/click-analytics', 'POST', clickData);
       
       if (response.success) {
         // Update click count
         await this.incrementClickCount(linkId);
+        console.log('Click tracked successfully in cloud');
+      } else {
+        console.error('Failed to track click in cloud:', response.error);
       }
-
-      // Always track locally as backup
-      this.trackLocalClick(linkId, userAgent, referrer);
     } catch (error) {
       console.error('Error tracking click in cloud:', error);
-      // Fallback to local tracking
-      this.trackLocalClick(linkId, userAgent, referrer);
+      throw error; // Don't fallback, throw error
     }
   }
 
   // Increment click count for a link
   private static async incrementClickCount(linkId: string): Promise<void> {
     try {
-      await this.apiRequest(`/affiliate-links/${linkId}/increment-clicks`, 'POST');
+      const response = await this.apiRequest(`/affiliate-links/${linkId}/increment-clicks`, 'PATCH');
+      if (response.success) {
+        console.log('Click count incremented for link:', linkId);
+      }
     } catch (error) {
       console.error('Error incrementing click count:', error);
     }

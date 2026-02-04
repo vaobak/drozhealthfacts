@@ -21,37 +21,38 @@ export const AffiliateRedirect: React.FC = () => {
     }
 
     const loadAffiliateLink = async () => {
-      // Find affiliate link with fallback
+      // ONLY use cloud database - no localStorage fallback
       let link: AffiliateLink | null = null;
       
       try {
         link = await CloudAffiliateManager.getAffiliateLinkBySlug(slug);
+        console.log('Cloud affiliate link loaded:', link);
       } catch (cloudError) {
-        console.warn('Cloud unavailable, using local storage:', cloudError);
-        link = AffiliateManager.getAffiliateLinkBySlug(slug);
+        console.error('Cloud database error:', cloudError);
+        // Show error message instead of fallback
+        navigate('/', { replace: true });
+        return;
       }
       
       if (!link) {
+        console.log('Affiliate link not found in cloud database for slug:', slug);
         navigate('/', { replace: true });
         return;
       }
 
       setAffiliateLink(link);
 
-      // Track the click with fallback
+      // Track the click in cloud database only
       try {
         await CloudAffiliateManager.trackClick(
           link.id,
           navigator.userAgent,
           document.referrer
         );
+        console.log('Click tracked in cloud database');
       } catch (trackError) {
-        console.warn('Cloud tracking failed, using local:', trackError);
-        AffiliateManager.trackClick(
-          link.id,
-          navigator.userAgent,
-          document.referrer
-        );
+        console.error('Cloud tracking failed:', trackError);
+        // Continue without tracking rather than fallback
       }
 
       // Handle redirect based on type

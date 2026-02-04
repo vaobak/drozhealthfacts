@@ -6,6 +6,7 @@ import { AffiliateLink } from '../types';
 import { Button } from './Button';
 import { SEO } from './SEO';
 import { AffiliateLogin } from './AffiliateLogin';
+import { CloudDebugPanel } from './CloudDebugPanel';
 import { 
   Plus, 
   Edit, 
@@ -60,14 +61,16 @@ export const AdminDashboard: React.FC = () => {
       let statistics: any = {};
       
       try {
+        console.log('Loading data from cloud database...');
         links = await CloudAffiliateManager.getAffiliateLinks();
         statistics = await CloudAffiliateManager.getStatsSummary();
         console.log('Loaded from cloud:', links.length, 'links');
       } catch (cloudError) {
-        console.warn('Cloud unavailable, using local storage:', cloudError);
-        links = AffiliateManager.getAffiliateLinks();
-        statistics = AffiliateManager.getStatsSummary();
-        console.log('Loaded from local:', links.length, 'links');
+        console.error('Cloud database error:', cloudError);
+        // Show error message instead of fallback
+        setAffiliateLinks([]);
+        setStats({ error: 'Cloud database unavailable. Please check your connection.' });
+        return;
       }
       
       setAffiliateLinks(links);
@@ -276,6 +279,9 @@ export const AdminDashboard: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
+        {/* Cloud Debug Panel */}
+        <CloudDebugPanel />
+        
         {/* Debug info */}
         <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">
           <h2 className="text-lg font-bold text-green-800 dark:text-green-200">

@@ -51,6 +51,8 @@ export async function onRequest(context: any): Promise<Response> {
         return await handlePut(DB, request, pathSegments);
       case 'DELETE':
         return await handleDelete(DB, pathSegments);
+      case 'PATCH':
+        return await handlePatch(DB, request, pathSegments);
       default:
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
           status: 405,
@@ -217,6 +219,44 @@ async function handlePut(DB: D1Database, request: Request, pathSegments: string[
   } catch (error) {
     console.error('PUT Error:', error);
     return new Response(JSON.stringify({ error: 'Failed to update affiliate link' }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  }
+}
+
+// PATCH - Increment click count
+async function handlePatch(DB: D1Database, request: Request, pathSegments: string[]): Promise<Response> {
+  try {
+    if (pathSegments.length < 4 || pathSegments[3] !== 'increment-clicks') {
+      return new Response(JSON.stringify({ error: 'Invalid PATCH endpoint' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    const id = pathSegments[2];
+    const now = new Date().toISOString();
+    
+    const result = await DB.prepare(`
+      UPDATE affiliate_links 
+      SET click_count = click_count + 1, updated_at = ? 
+      WHERE id = ?
+    `).bind(now, id).run();
+    
+    if (result.changes === 0) {
+      return new Response(JSON.stringify({ error: 'Affiliate link not found' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    return new Response(JSON.stringify({ success: true, message: 'Click count incremented' }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
+  } catch (error) {
+    console.error('PATCH Error:', error);
+    return new Response(JSON.stringify({ error: 'Failed to increment click count' }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
