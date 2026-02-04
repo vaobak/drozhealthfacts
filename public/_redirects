@@ -1,5 +1,9 @@
-# Cloudflare Pages SPA Redirects
-# This file ensures all routes redirect to index.html for React Router
+# Cloudflare Pages Redirects
+# API routes should be handled by Functions
+/api/*  /api/:splat  200
 
-# Handle all routes for SPA
-/*    /index.html   200
+# Affiliate routes should serve the SPA
+/affiliate/*  /index.html  200
+
+# All other routes serve the SPA
+/*  /index.html  200
