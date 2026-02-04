@@ -40,7 +40,7 @@ import { OvulationCalculatorPage } from './views/OvulationCalculatorPage';
 import { SearchResults } from './views/SearchResults';
 import { ArticleRedirect } from './components/ArticleRedirect';
 import { AffiliateRedirect } from './components/AffiliateRedirect';
-import { SimpleRedirectTest } from '../components/SimpleRedirectTest';
+import { SimpleRedirectTest } from './components/SimpleRedirectTest';
 
 function App() {
   return (
