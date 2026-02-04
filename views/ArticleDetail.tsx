@@ -54,16 +54,36 @@ export const ArticleDetail: React.FC = () => {
       const articleSlug = slug;
       
       // Check if this is an affiliate link first (using cloud database)
+      console.log('🔍 CHECKING AFFILIATE LINK for slug:', articleSlug);
+      
       try {
         const affiliateLink = await CloudAffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
+        console.log('📡 CloudAffiliateManager response:', affiliateLink);
+        
         if (affiliateLink) {
-          console.log('🔗 Affiliate link found in ArticleDetail:', affiliateLink);
+          console.log('✅ AFFILIATE LINK FOUND in ArticleDetail:', {
+            slug: affiliateLink.slug,
+            title: affiliateLink.title,
+            redirectType: affiliateLink.redirectType,
+            destinationUrl: affiliateLink.destinationUrl,
+            isActive: affiliateLink.isActive
+          });
+          
           setIsAffiliateLink(true);
           setAffiliateLinkData(affiliateLink);
           
           // Handle direct redirect type
           if (affiliateLink.redirectType === 'direct') {
-            console.log('🚀 DIRECT REDIRECT from ArticleDetail to:', affiliateLink.destinationUrl);
+            console.log('🚀 DIRECT REDIRECT DETECTED from ArticleDetail');
+            console.log('🎯 Target URL:', affiliateLink.destinationUrl);
+            
+            // Validate destination URL
+            if (!affiliateLink.destinationUrl || affiliateLink.destinationUrl.trim() === '') {
+              console.error('❌ DIRECT REDIRECT FAILED: Empty destination URL');
+              console.log('🏠 Redirecting to home due to empty destination URL');
+              navigate('/', { replace: true });
+              return;
+            }
             
             // Track the click (non-blocking)
             CloudAffiliateManager.trackClick(
@@ -74,9 +94,20 @@ export const ArticleDetail: React.FC = () => {
               console.error('⚠️ Click tracking failed (non-blocking):', error);
             });
             
-            // Immediate redirect
-            console.log('🚀 REDIRECTING NOW from ArticleDetail to:', affiliateLink.destinationUrl);
-            window.location.href = affiliateLink.destinationUrl;
+            // Immediate redirect with validation
+            let redirectUrl = affiliateLink.destinationUrl.trim();
+            if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
+              redirectUrl = 'https://' + redirectUrl;
+              console.log('🔧 Added https:// protocol to URL:', redirectUrl);
+            }
+            
+            console.log('🚀 EXECUTING DIRECT REDIRECT NOW to:', redirectUrl);
+            
+            // Use setTimeout to ensure all logging is complete
+            setTimeout(() => {
+              console.log('🚀 REDIRECTING VIA window.location.href to:', redirectUrl);
+              window.location.href = redirectUrl;
+            }, 100);
             
             // Set loading to false and return to prevent further processing
             setIsLoading(false);
@@ -84,20 +115,28 @@ export const ArticleDetail: React.FC = () => {
           }
           
           // For landing page type, set loading to false and let component render AffiliateRedirect
-          console.log('🎯 Landing page affiliate link found, will render AffiliateRedirect');
+          console.log('🎯 LANDING PAGE affiliate link found, will render AffiliateRedirect');
           setIsLoading(false);
           return;
+        } else {
+          console.log('❌ NO AFFILIATE LINK FOUND for slug:', articleSlug);
+          console.log('🔍 Will check for regular article...');
         }
       } catch (error) {
-        console.error('⚠️ Error checking affiliate link (non-blocking):', error);
+        console.error('❌ ERROR checking affiliate link:', error);
+        console.log('🔍 Will check for regular article due to error...');
         // Continue to check for article if affiliate link check fails
       }
       
       // Find article by slug from constants (metadata only)
+      console.log('🔍 CHECKING FOR REGULAR ARTICLE with slug:', articleSlug);
       const foundArticle = ARTICLES_DATA.find(a => a.slug === articleSlug);
+      console.log('📄 Article search result:', foundArticle ? 'FOUND' : 'NOT FOUND');
       
       // If article not found, redirect to home
       if (!foundArticle && articleSlug) {
+        console.log('❌ NEITHER AFFILIATE LINK NOR ARTICLE FOUND for slug:', articleSlug);
+        console.log('🏠 REDIRECTING TO HOME PAGE');
         navigate('/', { replace: true });
         return;
       }

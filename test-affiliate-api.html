@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Affiliate API</title>
+</head>
+<body>
+    <h1>Test Affiliate API</h1>
+    <div id="results"></div>
+    
+    <script>
+        async function testAPI() {
+            const results = document.getElementById('results');
+            
+            try {
+                // Test 1: Get all affiliate links
+                console.log('Testing API: /api/affiliate-links');
+                const response = await fetch('https://drozhealthfacts.com/api/affiliate-links');
+                const data = await response.json();
+                
+                results.innerHTML += `<h2>All Affiliate Links (${data.length} found):</h2>`;
+                
+                data.forEach((link, index) => {
+                    results.innerHTML += `
+                        <div style="border: 1px solid #ccc; margin: 10px; padding: 10px;">
+                            <h3>Link ${index + 1}: ${link.title}</h3>
+                            <p><strong>Slug:</strong> ${link.slug}</p>
+                            <p><strong>Destination URL:</strong> ${link.destinationUrl}</p>
+                            <p><strong>Redirect Type:</strong> ${link.redirectType}</p>
+                            <p><strong>Auto Redirect:</strong> ${link.autoRedirect}</p>
+                            <p><strong>Active:</strong> ${link.isActive}</p>
+                            <p><strong>Test URL:</strong> <a href="https://drozhealthfacts.com/${link.slug}" target="_blank">https://drozhealthfacts.com/${link.slug}</a></p>
+                        </div>
+                    `;
+                });
+                
+                // Test 2: Test specific slug
+                if (data.length > 0) {
+                    const firstLink = data[0];
+                    console.log('Testing specific slug:', firstLink.slug);
+                    
+                    const slugResponse = await fetch(`https://drozhealthfacts.com/api/affiliate-links/slug/${firstLink.slug}`);
+                    const slugData = await slugResponse.json();
+                    
+                    results.innerHTML += `
+                        <h2>Specific Slug Test (${firstLink.slug}):</h2>
+                        <pre>${JSON.stringify(slugData, null, 2)}</pre>
+                    `;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<h2>Error:</h2><p>${error.message}</p>`;
+                console.error('API Test Error:', error);
+            }
+        }
+        
+        // Run test when page loads
+        testAPI();
+    </script>
+</body>
+</html>
