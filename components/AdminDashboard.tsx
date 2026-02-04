@@ -261,8 +261,13 @@ export const AdminDashboard: React.FC = () => {
                     onChange={handleInputChange}
                     placeholder="Weight Loss"
                     className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                    required
+                    required={formData.redirectType === 'landing'}
                   />
+                  {formData.redirectType === 'direct' && (
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                      Optional for direct redirects
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -292,8 +297,13 @@ export const AdminDashboard: React.FC = () => {
                   placeholder="Product description"
                   rows={3}
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  required
+                  required={formData.redirectType === 'landing'}
                 />
+                {formData.redirectType === 'direct' && (
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Optional for direct redirects
+                  </p>
+                )}
               </div>
 
               <div>
@@ -313,64 +323,6 @@ export const AdminDashboard: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Product Image URL
-                </label>
-                <input
-                  type="url"
-                  name="productImage"
-                  value={formData.productImage}
-                  onChange={handleInputChange}
-                  placeholder="https://example.com/image.jpg"
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Price
-                  </label>
-                  <input
-                    type="text"
-                    name="price"
-                    value={formData.price}
-                    onChange={handleInputChange}
-                    placeholder="$49.99"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Original Price
-                  </label>
-                  <input
-                    type="text"
-                    name="originalPrice"
-                    value={formData.originalPrice}
-                    onChange={handleInputChange}
-                    placeholder="$79.99"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Discount
-                  </label>
-                  <input
-                    type="text"
-                    name="discount"
-                    value={formData.discount}
-                    onChange={handleInputChange}
-                    placeholder="37% OFF"
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Tags (comma separated)
                 </label>
                 <input
@@ -383,60 +335,129 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
 
+              {/* Redirect Settings */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Trust Badges (comma separated)
+                  Redirect Type
                 </label>
-                <input
-                  type="text"
-                  name="trustBadges"
-                  value={formData.trustBadges}
+                <select
+                  name="redirectType"
+                  value={formData.redirectType}
                   onChange={handleInputChange}
-                  placeholder="FDA Approved, Doctor Recommended, 30-Day Guarantee"
                   className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                />
+                >
+                  <option value="landing">Landing Page (Show product info first)</option>
+                  <option value="direct">Direct Redirect (Immediate redirect)</option>
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Landing page builds trust, direct redirect is faster
+                </p>
               </div>
 
-              {/* Redirect Settings */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Redirect Type
-                  </label>
-                  <select
-                    name="redirectType"
-                    value={formData.redirectType}
-                    onChange={handleInputChange}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
-                  >
-                    <option value="landing">Landing Page (Show product info first)</option>
-                    <option value="direct">Direct Redirect (Immediate redirect)</option>
-                  </select>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Landing page builds trust, direct redirect is faster
-                  </p>
-                </div>
+              {/* Landing Page Specific Settings */}
+              {formData.redirectType === 'landing' && (
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <h4 className="text-sm font-medium text-blue-900 dark:text-blue-100 mb-3">
+                    Landing Page Settings
+                  </h4>
+                  
+                  <div className="space-y-4">
+                    {/* Product Image */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Product Image URL
+                      </label>
+                      <input
+                        type="url"
+                        name="productImage"
+                        value={formData.productImage}
+                        onChange={handleInputChange}
+                        placeholder="https://example.com/image.jpg"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                    Auto Redirect (Landing Page Only)
-                  </label>
-                  <select
-                    name="autoRedirect"
-                    value={formData.autoRedirect.toString()}
-                    onChange={(e) => setFormData(prev => ({ ...prev, autoRedirect: e.target.value === 'true' }))}
-                    disabled={formData.redirectType === 'direct'}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
-                  >
-                    <option value="true">Auto redirect after 5 seconds</option>
-                    <option value="false">Manual click only (let customer read)</option>
-                  </select>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                    Manual click gives customers time to read product details
-                  </p>
-                </div>
-              </div>
+                    {/* Pricing Information */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Price
+                        </label>
+                        <input
+                          type="text"
+                          name="price"
+                          value={formData.price}
+                          onChange={handleInputChange}
+                          placeholder="$49.99"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
 
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Original Price
+                        </label>
+                        <input
+                          type="text"
+                          name="originalPrice"
+                          value={formData.originalPrice}
+                          onChange={handleInputChange}
+                          placeholder="$79.99"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                          Discount
+                        </label>
+                        <input
+                          type="text"
+                          name="discount"
+                          value={formData.discount}
+                          onChange={handleInputChange}
+                          placeholder="37% OFF"
+                          className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Trust Badges */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Trust Badges (comma separated)
+                      </label>
+                      <input
+                        type="text"
+                        name="trustBadges"
+                        value={formData.trustBadges}
+                        onChange={handleInputChange}
+                        placeholder="FDA Approved, Doctor Recommended, 30-Day Guarantee"
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      />
+                    </div>
+
+                    {/* Auto Redirect Setting */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Auto Redirect Behavior
+                      </label>
+                      <select
+                        name="autoRedirect"
+                        value={formData.autoRedirect.toString()}
+                        onChange={(e) => setFormData(prev => ({ ...prev, autoRedirect: e.target.value === 'true' }))}
+                        className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                      >
+                        <option value="true">Auto redirect after 5 seconds</option>
+                        <option value="false">Manual click only (let customer read)</option>
+                      </select>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Manual click gives customers time to read product details and builds more trust
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
               <div className="flex items-center">
                 <input
                   type="checkbox"
