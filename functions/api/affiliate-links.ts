@@ -57,7 +57,11 @@ export async function onRequest(context: any): Promise<Response> {
   try {
     const url = new URL(request.url);
     const pathSegments = url.pathname.split('/').filter(Boolean);
+    console.log('Full URL:', request.url);
+    console.log('Pathname:', url.pathname);
     console.log('Path segments:', pathSegments);
+    console.log('Path segments length:', pathSegments.length);
+    console.log('Checking for slug endpoint: segments[2] =', pathSegments[2], 'segments[3] =', pathSegments[3]);
     
     switch (request.method) {
       case 'GET':
@@ -94,19 +98,21 @@ export async function onRequest(context: any): Promise<Response> {
 // GET - Fetch affiliate links
 async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Response> {
   try {
+    console.log('GET Handler - Path segments:', pathSegments);
+    
     // Check if requesting by slug: /api/affiliate-links/slug/formula99
     if (pathSegments.length >= 4 && pathSegments[2] === 'slug') {
       const slug = pathSegments[3];
-      console.log('Looking for affiliate link by slug:', slug);
+      console.log('🔍 SLUG ENDPOINT: Looking for affiliate link by slug:', slug);
       
       const result = await DB.prepare(
         'SELECT * FROM affiliate_links WHERE slug = ?'
       ).bind(slug).first();
       
-      console.log('Database result for slug lookup:', result);
+      console.log('📊 Database result for slug lookup:', result);
       
       if (!result) {
-        console.log('No affiliate link found for slug:', slug);
+        console.log('❌ No affiliate link found for slug:', slug);
         return new Response(JSON.stringify({ error: 'Affiliate link not found' }), {
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -129,6 +135,48 @@ async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Respon
         originalPrice: result.original_price
       };
       
+      console.log('✅ SLUG ENDPOINT: Returning affiliate link:', link);
+      return new Response(JSON.stringify(link), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    // Check if requesting by ID: /api/affiliate-links/some-uuid
+    if (pathSegments.length >= 3 && pathSegments[2] !== 'slug') {
+      const id = pathSegments[2];
+      console.log('🆔 ID ENDPOINT: Looking for affiliate link by ID:', id);
+      
+      const result = await DB.prepare(
+        'SELECT * FROM affiliate_links WHERE id = ?'
+      ).bind(id).first();
+      
+      console.log('📊 Database result for ID lookup:', result);
+      
+      if (!result) {
+        console.log('❌ No affiliate link found for ID:', id);
+        return new Response(JSON.stringify({ error: 'Affiliate link not found' }), {
+          status: 404,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+      
+      // Parse JSON fields and map database fields to frontend format
+      const link = {
+        ...result,
+        destinationUrl: result.destination_url,
+        redirectType: result.redirect_type,
+        productImage: result.product_image,
+        trustBadges: result.trust_badges ? JSON.parse(result.trust_badges as string) : [],
+        tags: result.tags ? JSON.parse(result.tags as string) : [],
+        isActive: Boolean(result.is_active),
+        autoRedirect: Boolean(result.auto_redirect),
+        clickCount: result.click_count,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+        originalPrice: result.original_price
+      };
+      
+      console.log('✅ ID ENDPOINT: Returning affiliate link:', link);
       return new Response(JSON.stringify(link), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -274,14 +322,18 @@ async function handlePost(DB: D1Database, request: Request): Promise<Response> {
 // PUT - Update affiliate link
 async function handlePut(DB: D1Database, request: Request, pathSegments: string[]): Promise<Response> {
   try {
-    if (pathSegments.length < 3) {
+    // Handle both /api/affiliate-links/id and /api/affiliate-links/slug/id patterns
+    let id: string;
+    
+    if (pathSegments.length >= 3) {
+      id = pathSegments[2]; // /api/affiliate-links/ID
+      console.log('PUT: Updating affiliate link with ID:', id);
+    } else {
       return new Response(JSON.stringify({ error: 'Missing affiliate link ID' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
-    
-    const id = pathSegments[2];
     const data = await request.json();
     const now = new Date().toISOString();
     
