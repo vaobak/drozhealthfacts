@@ -85,13 +85,20 @@ async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Respon
         });
       }
       
-      // Parse JSON fields
+      // Parse JSON fields and map database fields to frontend format
       const link = {
         ...result,
-        tags: result.tags ? JSON.parse(result.tags as string) : [],
+        destinationUrl: result.destination_url, // Map database field to frontend field
+        redirectType: result.redirect_type, // Map database field to frontend field
+        productImage: result.product_image, // Map database field to frontend field
         trustBadges: result.trust_badges ? JSON.parse(result.trust_badges as string) : [],
+        tags: result.tags ? JSON.parse(result.tags as string) : [],
         isActive: Boolean(result.is_active),
-        autoRedirect: Boolean(result.auto_redirect)
+        autoRedirect: Boolean(result.auto_redirect),
+        clickCount: result.click_count,
+        createdAt: result.created_at,
+        updatedAt: result.updated_at,
+        originalPrice: result.original_price
       };
       
       return new Response(JSON.stringify(link), {
@@ -106,10 +113,17 @@ async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Respon
     
     const links = results.results.map((result: any) => ({
       ...result,
-      tags: result.tags ? JSON.parse(result.tags) : [],
+      destinationUrl: result.destination_url, // Map database field to frontend field
+      redirectType: result.redirect_type, // Map database field to frontend field
+      productImage: result.product_image, // Map database field to frontend field
       trustBadges: result.trust_badges ? JSON.parse(result.trust_badges) : [],
+      tags: result.tags ? JSON.parse(result.tags) : [],
       isActive: Boolean(result.is_active),
-      autoRedirect: Boolean(result.auto_redirect)
+      autoRedirect: Boolean(result.auto_redirect),
+      clickCount: result.click_count,
+      createdAt: result.created_at,
+      updatedAt: result.updated_at,
+      originalPrice: result.original_price
     }));
     
     return new Response(JSON.stringify(links), {

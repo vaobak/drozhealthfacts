@@ -8,6 +8,7 @@ import { SEO } from './SEO';
 import { AffiliateLogin } from './AffiliateLogin';
 import { CloudDebugPanel } from './CloudDebugPanel';
 import { AffiliateFormTest } from './AffiliateFormTest';
+import { FieldMappingDebug } from './FieldMappingDebug';
 import { 
   Plus, 
   Edit, 
@@ -306,6 +307,9 @@ export const AdminDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Cloud Debug Panel */}
         <CloudDebugPanel />
+        
+        {/* Field Mapping Debug Panel */}
+        <FieldMappingDebug />
         
         {/* Form Test Panel */}
         <AffiliateFormTest />
