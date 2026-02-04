@@ -102,9 +102,9 @@ function App() {
             {/* Contact */}
             <Route path="/contact" element={<Contact />} />
             
-            {/* Admin Dashboard - Protected Route */}
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            {/* Affiliate Dashboard - Protected Route */}
+            <Route path="/affiliate" element={<AdminDashboard />} />
+            <Route path="/affiliate/dashboard" element={<AdminDashboard />} />
             
             {/* Article Detail - Flat Structure for SEO (Must be after all static routes) */}
             <Route path="/:slug" element={<ArticleDetail />} />

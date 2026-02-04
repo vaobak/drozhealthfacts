@@ -19,6 +19,7 @@ Allow: /protein-intake-calculator
 
 # Disallow admin or private pages (if any in future)
 # Disallow: /admin/
+Disallow: /affiliate/
 # Disallow: /private/
 
 # Sitemap location

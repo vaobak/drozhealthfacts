@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { AffiliateManager } from '../utils/affiliateManager';
+import { AuthManager } from '../utils/authManager';
 import { AffiliateLink } from '../types';
 import { Button } from './Button';
 import { SEO } from './SEO';
+import { AffiliateLogin } from './AffiliateLogin';
 import { 
   Plus, 
   Edit, 
@@ -15,15 +17,57 @@ import {
   CheckCircle,
   AlertCircle,
   TrendingUp,
-  MousePointer
+  MousePointer,
+  LogOut,
+  Shield
 } from 'lucide-react';
 
 export const AdminDashboard: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLink[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLink, setEditingLink] = useState<AffiliateLink | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
+
+  // Check authentication on component mount
+  useEffect(() => {
+    const checkAuth = () => {
+      const authenticated = AuthManager.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      
+      if (authenticated) {
+        loadData();
+      }
+    };
+
+    checkAuth();
+    
+    // Check auth status periodically (every minute)
+    const authInterval = setInterval(checkAuth, 60000);
+    
+    return () => clearInterval(authInterval);
+  }, []);
+
+  const handleLogin = () => {
+    setIsAuthenticated(true);
+    loadData();
+  };
+
+  const handleLogout = () => {
+    AuthManager.logout();
+    setIsAuthenticated(false);
+    // Clear sensitive data
+    setAffiliateLinks([]);
+    setStats(null);
+    setShowAddForm(false);
+    setEditingLink(null);
+  };
+
+  // If not authenticated, show login form
+  if (!isAuthenticated) {
+    return <AffiliateLogin onLogin={handleLogin} />;
+  }
 
   // Form state
   const [formData, setFormData] = useState({
@@ -148,18 +192,36 @@ export const AdminDashboard: React.FC = () => {
       <SEO
         title="Affiliate Dashboard - Dr. Oz Health Facts"
         description="Manage affiliate links and track performance"
-        canonicalUrl="https://drozhealthfacts.com/admin"
+        canonicalUrl="https://drozhealthfacts.com/affiliate"
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            Affiliate Dashboard
-          </h1>
-          <p className="text-gray-600 dark:text-gray-300">
-            Manage your affiliate links and track performance
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              Affiliate Dashboard
+            </h1>
+            <p className="text-gray-600 dark:text-gray-300">
+              Manage your affiliate links and track performance
+            </p>
+          </div>
+          
+          {/* Security & Logout */}
+          <div className="flex items-center space-x-4">
+            <div className="flex items-center text-sm text-green-600 dark:text-green-400">
+              <Shield className="w-4 h-4 mr-1" />
+              <span>Secure Session</span>
+            </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              className="flex items-center text-sm"
+            >
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
+            </Button>
+          </div>
         </div>
 
         {/* Stats Cards */}
