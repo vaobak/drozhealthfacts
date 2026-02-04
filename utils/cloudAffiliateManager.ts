@@ -224,7 +224,7 @@ export class CloudAffiliateManager {
   // Increment click count for a link
   private static async incrementClickCount(linkId: string): Promise<void> {
     try {
-      const response = await this.apiRequest(`/affiliate-links/${linkId}/increment-clicks`, 'PATCH');
+      const response = await this.apiRequest(`/affiliate-links/${linkId}?action=increment-clicks`, 'PATCH');
       if (response.success) {
         console.log('Click count incremented for link:', linkId);
       }

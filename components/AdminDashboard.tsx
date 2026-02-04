@@ -11,6 +11,8 @@ import { AffiliateFormTest } from './AffiliateFormTest';
 import { FieldMappingDebug } from './FieldMappingDebug';
 import { ManualFormTest } from './ManualFormTest';
 import { RedirectTestPanel } from './RedirectTestPanel';
+import { CRUDTestPanel } from './CRUDTestPanel';
+import { APIEndpointTest } from './APIEndpointTest';
 import { 
   Plus, 
   Edit, 
@@ -318,6 +320,12 @@ export const AdminDashboard: React.FC = () => {
             <div>• Enhanced logging for troubleshooting</div>
           </div>
         </div>
+
+        {/* CRUD Test Panel */}
+        <CRUDTestPanel />
+
+        {/* API Endpoint Test Panel */}
+        <APIEndpointTest />
 
         {/* Redirect Test Panel */}
         <RedirectTestPanel />

@@ -6,7 +6,7 @@ interface Env {
 // CORS Headers
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
   'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Project-ID',
 };
 
@@ -34,13 +34,20 @@ export async function onRequest(context: any): Promise<Response> {
   const { request, env } = context;
   const { DB } = env as Env;
   
+  console.log('=== API REQUEST START ===');
+  console.log('Method:', request.method);
+  console.log('URL:', request.url);
+  console.log('Headers:', Object.fromEntries(request.headers.entries()));
+  
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { headers: corsHeaders });
   }
   
   // Authentication (skip for GET requests to allow public access)
   if (request.method !== 'GET' && !authenticate(request)) {
+    console.log('Authentication failed for non-GET request');
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -50,19 +57,26 @@ export async function onRequest(context: any): Promise<Response> {
   try {
     const url = new URL(request.url);
     const pathSegments = url.pathname.split('/').filter(Boolean);
+    console.log('Path segments:', pathSegments);
     
     switch (request.method) {
       case 'GET':
+        console.log('Routing to GET handler');
         return await handleGet(DB, pathSegments);
       case 'POST':
+        console.log('Routing to POST handler');
         return await handlePost(DB, request);
       case 'PUT':
+        console.log('Routing to PUT handler');
         return await handlePut(DB, request, pathSegments);
       case 'DELETE':
+        console.log('Routing to DELETE handler');
         return await handleDelete(DB, pathSegments);
       case 'PATCH':
+        console.log('Routing to PATCH handler');
         return await handlePatch(DB, request, pathSegments);
       default:
+        console.log('Method not allowed:', request.method);
         return new Response(JSON.stringify({ error: 'Method not allowed' }), {
           status: 405,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
