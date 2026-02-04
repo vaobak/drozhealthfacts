@@ -57,8 +57,8 @@ export const AffiliateRedirect: React.FC = () => {
 
       // Handle redirect based on type
       if (link.redirectType === 'direct') {
-        // Direct redirect - immediate redirect
-        handleRedirect(link.destinationUrl);
+        // Direct redirect - immediate redirect in same tab
+        handleRedirect(link.destinationUrl, true);
         return;
       }
 
@@ -68,7 +68,7 @@ export const AffiliateRedirect: React.FC = () => {
           setCountdown(prev => {
             if (prev <= 1) {
               clearInterval(timer);
-              handleRedirect(link.destinationUrl);
+              handleRedirect(link.destinationUrl, false);
               return 0;
             }
             return prev - 1;
@@ -82,20 +82,27 @@ export const AffiliateRedirect: React.FC = () => {
     loadAffiliateLink();
   }, [slug, navigate]);
 
-  const handleRedirect = (url: string) => {
+  const handleRedirect = (url: string, isDirect: boolean = false) => {
     setIsRedirecting(true);
-    // Open in new tab to maintain user experience
-    window.open(url, '_blank', 'noopener,noreferrer');
+    console.log('Redirecting to:', url, 'Direct:', isDirect);
     
-    // Redirect current tab back to home after a delay
-    setTimeout(() => {
-      navigate('/', { replace: true });
-    }, 1000);
+    if (isDirect) {
+      // For direct redirect, redirect in the same tab
+      window.location.href = url;
+    } else {
+      // For landing page redirect, open in new tab to maintain user experience
+      window.open(url, '_blank', 'noopener,noreferrer');
+      
+      // Redirect current tab back to home after a delay
+      setTimeout(() => {
+        navigate('/', { replace: true });
+      }, 1000);
+    }
   };
 
   const handleManualRedirect = () => {
     if (affiliateLink) {
-      handleRedirect(affiliateLink.destinationUrl);
+      handleRedirect(affiliateLink.destinationUrl, false);
     }
   };
 

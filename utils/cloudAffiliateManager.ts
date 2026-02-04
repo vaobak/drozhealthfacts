@@ -38,21 +38,30 @@ export class CloudAffiliateManager {
   // Generic API request handler
   private static async apiRequest<T>(
     endpoint: string, 
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' = 'GET',
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH' = 'GET',
     body?: any
   ): Promise<ApiResponse<T>> {
     try {
+      console.log(`Making ${method} request to:`, `${this.config.apiEndpoint}${endpoint}`);
+      console.log('Request headers:', this.getHeaders());
+      console.log('Request body:', body);
+      
       const response = await fetch(`${this.config.apiEndpoint}${endpoint}`, {
         method,
         headers: this.getHeaders(),
         body: body ? JSON.stringify(body) : undefined
       });
 
+      console.log('Response status:', response.status, response.statusText);
+      
       if (!response.ok) {
+        const errorText = await response.text();
+        console.error('API Error Response:', errorText);
         throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('API Response data:', data);
       return { success: true, data };
     } catch (error) {
       console.error(`API Request failed [${method} ${endpoint}]:`, error);

@@ -15,10 +15,19 @@ function authenticate(request: Request): boolean {
   const apiKey = request.headers.get('Authorization')?.replace('Bearer ', '');
   const projectId = request.headers.get('X-Project-ID');
   
+  console.log('Authentication check:');
+  console.log('- Received API Key:', apiKey);
+  console.log('- Received Project ID:', projectId);
+  console.log('- Expected API Key:', 'droz-health-facts-api-key-2026');
+  console.log('- Expected Project ID:', 'droz-health-facts');
+  
   const validApiKey = 'droz-health-facts-api-key-2026';
   const validProjectId = 'droz-health-facts';
   
-  return apiKey === validApiKey && projectId === validProjectId;
+  const isValid = apiKey === validApiKey && projectId === validProjectId;
+  console.log('- Authentication result:', isValid);
+  
+  return isValid;
 }
 
 export async function onRequest(context: any): Promise<Response> {

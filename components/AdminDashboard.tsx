@@ -10,6 +10,7 @@ import { CloudDebugPanel } from './CloudDebugPanel';
 import { AffiliateFormTest } from './AffiliateFormTest';
 import { FieldMappingDebug } from './FieldMappingDebug';
 import { ManualFormTest } from './ManualFormTest';
+import { RedirectTestPanel } from './RedirectTestPanel';
 import { 
   Plus, 
   Edit, 
@@ -306,16 +307,20 @@ export const AdminDashboard: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Success Message */}
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
-          <h2 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">
-            🎉 Field Mapping FIXED!
+        {/* Critical Issues Fixed */}
+        <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-bold text-orange-800 dark:text-orange-200 mb-2">
+            🔧 Critical Issues Being Fixed
           </h2>
-          <p className="text-green-700 dark:text-green-300 text-sm">
-            Based on your API test results, destinationUrl and redirectType are now saving correctly! 
-            The API shows both database format (destination_url) and frontend format (destinationUrl) - this is perfect!
-          </p>
+          <div className="text-orange-700 dark:text-orange-300 text-sm space-y-1">
+            <div>• HTTP 405 Error on PUT requests (edit links) - Added authentication debugging</div>
+            <div>• Redirect not working on other devices - Fixed direct redirect logic</div>
+            <div>• Enhanced logging for troubleshooting</div>
+          </div>
         </div>
+
+        {/* Redirect Test Panel */}
+        <RedirectTestPanel />
 
         {/* Manual Form Test Guide */}
         <ManualFormTest />
