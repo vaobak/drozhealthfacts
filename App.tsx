@@ -40,7 +40,7 @@ import { OvulationCalculatorPage } from './views/OvulationCalculatorPage';
 import { SearchResults } from './views/SearchResults';
 import { ArticleRedirect } from './components/ArticleRedirect';
 import { AffiliateRedirect } from './components/AffiliateRedirect';
-import { SimpleRedirectTest } from './components/SimpleRedirectTest';
+import { AdminDashboard } from './components/AdminDashboard';
 
 function App() {
   return (
@@ -105,10 +105,6 @@ function App() {
             {/* Affiliate Dashboard - Protected Route */}
             <Route path="/affiliate" element={<AdminDashboard />} />
             <Route path="/affiliate/dashboard" element={<AdminDashboard />} />
-            
-            {/* Simple Redirect Test - Debug Route */}
-            <Route path="/simple-test" element={<SimpleRedirectTest />} />
-            <Route path="/debug-redirect/:slug" element={<SimpleRedirectTest />} />
             
             {/* Article Detail - Flat Structure for SEO (Must be after all static routes) */}
             <Route path="/:slug" element={<ArticleDetail />} />

@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct Redirect Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .test-url {
+            background: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            margin: 10px 0;
+            word-break: break-all;
+        }
+        .button {
+            background: #007cba;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .button:hover {
+            background: #005a87;
+        }
+        .logs {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 300px;
+            overflow-y: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 Direct Redirect Test Tool</h1>
+        
+        <h2>Test Direct Redirect Functionality</h2>
+        <p>This tool helps test if direct redirect is working correctly.</p>
+        
+        <h3>Step 1: Enter Your Direct Redirect URL</h3>
+        <input type="text" id="testUrl" placeholder="https://drozhealthfacts.com/your-direct-link" 
+               style="width: 100%; padding: 10px; margin: 10px 0;">
+        
+        <h3>Step 2: Test Redirect</h3>
+        <button class="button" onclick="testRedirect()">🧪 Test Direct Redirect</button>
+        <button class="button" onclick="testInNewTab()">🔗 Test in New Tab</button>
+        <button class="button" onclick="clearLogs()">🗑️ Clear Logs</button>
+        
+        <h3>Expected Behavior:</h3>
+        <ul>
+            <li>✅ Should immediately redirect to destination URL</li>
+            <li>✅ No landing page should be shown</li>
+            <li>✅ Should redirect in same tab (not new tab)</li>
+            <li>❌ Should NOT redirect to home page</li>
+        </ul>
+        
+        <h3>Console Logs:</h3>
+        <div id="logs" class="logs">
+            Logs will appear here...
+        </div>
+        
+        <h3>Quick Test URLs:</h3>
+        <div class="test-url" onclick="setTestUrl(this.textContent)">
+            https://drozhealthfacts.com/test-direct-redirect
+        </div>
+        <div class="test-url" onclick="setTestUrl(this.textContent)">
+            https://drozhealthfacts.com/formula99
+        </div>
+        
+        <h3>Manual Test Steps:</h3>
+        <ol>
+            <li>Create a direct redirect link in affiliate dashboard</li>
+            <li>Set redirect type to "Direct Redirect"</li>
+            <li>Set destination URL (e.g., https://www.google.com)</li>
+            <li>Copy the affiliate link URL</li>
+            <li>Paste it in the input above</li>
+            <li>Click "Test Direct Redirect"</li>
+            <li>Check if it redirects to destination (not home page)</li>
+        </ol>
+    </div>
+
+    <script>
+        function log(message) {
+            const logs = document.getElementById('logs');
+            const timestamp = new Date().toLocaleTimeString();
+            logs.innerHTML += `[${timestamp}] ${message}\n`;
+            logs.scrollTop = logs.scrollHeight;
+            console.log(message);
+        }
+
+        function clearLogs() {
+            document.getElementById('logs').innerHTML = 'Logs cleared...\n';
+        }
+
+        function setTestUrl(url) {
+            document.getElementById('testUrl').value = url;
+            log(`📝 Test URL set to: ${url}`);
+        }
+
+        function testRedirect() {
+            const url = document.getElementById('testUrl').value.trim();
+            if (!url) {
+                log('❌ Please enter a test URL first');
+                return;
+            }
+
+            log(`🧪 Testing direct redirect to: ${url}`);
+            log('🔄 Redirecting in same tab...');
+            
+            // Simulate what should happen
+            setTimeout(() => {
+                log('🚀 Executing redirect...');
+                window.location.href = url;
+            }, 1000);
+        }
+
+        function testInNewTab() {
+            const url = document.getElementById('testUrl').value.trim();
+            if (!url) {
+                log('❌ Please enter a test URL first');
+                return;
+            }
+
+            log(`🔗 Opening in new tab: ${url}`);
+            const newWindow = window.open(url, '_blank', 'noopener,noreferrer');
+            
+            if (!newWindow) {
+                log('❌ Popup blocked by browser');
+            } else {
+                log('✅ New tab opened successfully');
+            }
+        }
+
+        // Initialize
+        log('🚀 Direct Redirect Test Tool Ready');
+        log('📝 Enter your affiliate link URL above and click test');
+    </script>
+</body>
+</html>
