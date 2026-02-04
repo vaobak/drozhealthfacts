@@ -4,7 +4,7 @@ import { AuthManager } from '../utils/authManager';
 import { AffiliateLink } from '../types';
 import { Button } from './Button';
 import { SEO } from './SEO';
-import { AffiliateLogin } from './AffiliateLogin';
+import AffiliateLogin from './AffiliateLogin';
 import { 
   Plus, 
   Edit, 
