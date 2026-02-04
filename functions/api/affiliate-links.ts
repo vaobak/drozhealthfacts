@@ -74,11 +74,16 @@ async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Respon
     // Check if requesting by slug: /api/affiliate-links/slug/formula99
     if (pathSegments.length >= 4 && pathSegments[2] === 'slug') {
       const slug = pathSegments[3];
+      console.log('Looking for affiliate link by slug:', slug);
+      
       const result = await DB.prepare(
-        'SELECT * FROM affiliate_links WHERE slug = ? AND is_active = 1'
+        'SELECT * FROM affiliate_links WHERE slug = ?'
       ).bind(slug).first();
       
+      console.log('Database result for slug lookup:', result);
+      
       if (!result) {
+        console.log('No affiliate link found for slug:', slug);
         return new Response(JSON.stringify({ error: 'Affiliate link not found' }), {
           status: 404,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }

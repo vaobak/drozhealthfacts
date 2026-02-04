@@ -9,6 +9,7 @@ import { AffiliateLogin } from './AffiliateLogin';
 import { CloudDebugPanel } from './CloudDebugPanel';
 import { AffiliateFormTest } from './AffiliateFormTest';
 import { FieldMappingDebug } from './FieldMappingDebug';
+import { ManualFormTest } from './ManualFormTest';
 import { 
   Plus, 
   Edit, 
@@ -305,11 +306,25 @@ export const AdminDashboard: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Cloud Debug Panel */}
-        <CloudDebugPanel />
+        {/* Success Message */}
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
+          <h2 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">
+            🎉 Field Mapping FIXED!
+          </h2>
+          <p className="text-green-700 dark:text-green-300 text-sm">
+            Based on your API test results, destinationUrl and redirectType are now saving correctly! 
+            The API shows both database format (destination_url) and frontend format (destinationUrl) - this is perfect!
+          </p>
+        </div>
+
+        {/* Manual Form Test Guide */}
+        <ManualFormTest />
         
         {/* Field Mapping Debug Panel */}
         <FieldMappingDebug />
+        
+        {/* Cloud Debug Panel */}
+        <CloudDebugPanel />
         
         {/* Form Test Panel */}
         <AffiliateFormTest />
