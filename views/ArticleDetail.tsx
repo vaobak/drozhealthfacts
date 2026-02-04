@@ -7,7 +7,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Article } from '../types';
 import { ARTICLES_DATA } from '../constants';
 import { loadArticleContent } from '../utils/loadArticleContent';
-import { AffiliateManager } from '../utils/affiliateManager';
+import { CloudAffiliateManager } from '../utils/cloudAffiliateManager';
 import { Button } from '../components/Button';
 import { ReadingProgress } from '../components/ReadingProgress';
 import { RelatedArticlesCarousel } from '../components/RelatedArticlesCarousel';
@@ -42,6 +42,8 @@ export const ArticleDetail: React.FC = () => {
   const [relatedArticles, setRelatedArticles] = useState<Article[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [readingTime, setReadingTime] = useState(0);
+  const [isAffiliateLink, setIsAffiliateLink] = useState(false);
+  const [affiliateLinkData, setAffiliateLinkData] = useState<any>(null);
 
   useEffect(() => {
     const loadArticle = async () => {
@@ -51,12 +53,44 @@ export const ArticleDetail: React.FC = () => {
       // Get slug from URL params
       const articleSlug = slug;
       
-      // Check if this is an affiliate link first
-      const affiliateLink = AffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
-      if (affiliateLink) {
-        // Set loading to false and let the component render AffiliateRedirect
-        setIsLoading(false);
-        return;
+      // Check if this is an affiliate link first (using cloud database)
+      try {
+        const affiliateLink = await CloudAffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
+        if (affiliateLink) {
+          console.log('🔗 Affiliate link found in ArticleDetail:', affiliateLink);
+          setIsAffiliateLink(true);
+          setAffiliateLinkData(affiliateLink);
+          
+          // Handle direct redirect type
+          if (affiliateLink.redirectType === 'direct') {
+            console.log('🚀 DIRECT REDIRECT from ArticleDetail to:', affiliateLink.destinationUrl);
+            
+            // Track the click (non-blocking)
+            CloudAffiliateManager.trackClick(
+              affiliateLink.id,
+              navigator.userAgent,
+              document.referrer
+            ).catch(error => {
+              console.error('⚠️ Click tracking failed (non-blocking):', error);
+            });
+            
+            // Immediate redirect
+            console.log('🚀 REDIRECTING NOW from ArticleDetail to:', affiliateLink.destinationUrl);
+            window.location.href = affiliateLink.destinationUrl;
+            
+            // Set loading to false and return to prevent further processing
+            setIsLoading(false);
+            return;
+          }
+          
+          // For landing page type, set loading to false and let component render AffiliateRedirect
+          console.log('🎯 Landing page affiliate link found, will render AffiliateRedirect');
+          setIsLoading(false);
+          return;
+        }
+      } catch (error) {
+        console.error('⚠️ Error checking affiliate link (non-blocking):', error);
+        // Continue to check for article if affiliate link check fails
       }
       
       // Find article by slug from constants (metadata only)
@@ -207,21 +241,11 @@ export const ArticleDetail: React.FC = () => {
     return <ArticleSkeleton />;
   }
 
-  // Check if this is an affiliate link and render AffiliateRedirect
-  const affiliateLink = AffiliateManager.getAffiliateLinkBySlug(slug || '');
-  if (affiliateLink) {
-    // Handle direct redirect type
-    if (affiliateLink.redirectType === 'direct') {
-      // Track the click
-      AffiliateManager.trackClick(
-        affiliateLink.id,
-        navigator.userAgent,
-        document.referrer
-      );
-      
-      // Immediate redirect
-      window.location.href = affiliateLink.destinationUrl;
-      
+  // For affiliate links, we need to handle them in useEffect since CloudAffiliateManager is async
+  // The affiliate link check is now done in useEffect above
+  if (isAffiliateLink && affiliateLinkData) {
+    // Handle direct redirect type (should have already redirected in useEffect)
+    if (affiliateLinkData.redirectType === 'direct') {
       // Return loading state while redirecting
       return <ArticleSkeleton />;
     }
