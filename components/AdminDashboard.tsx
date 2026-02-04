@@ -24,17 +24,31 @@ import {
 
 export const AdminDashboard: React.FC = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [affiliateLinks, setAffiliateLinks] = useState<AffiliateLink[]>([]);
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingLink, setEditingLink] = useState<AffiliateLink | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [copiedSlug, setCopiedSlug] = useState<string | null>(null);
 
+  // Data loading function
+  const loadData = () => {
+    try {
+      const links = AffiliateManager.getAffiliateLinks();
+      const statistics = AffiliateManager.getStatsSummary();
+      setAffiliateLinks(links);
+      setStats(statistics);
+    } catch (error) {
+      console.error('Error loading affiliate data:', error);
+    }
+  };
+
   // Check authentication on component mount
   useEffect(() => {
     const checkAuth = () => {
       const authenticated = AuthManager.isAuthenticated();
       setIsAuthenticated(authenticated);
+      setIsLoading(false);
       
       if (authenticated) {
         loadData();
@@ -51,18 +65,32 @@ export const AdminDashboard: React.FC = () => {
 
   const handleLogin = () => {
     setIsAuthenticated(true);
+    setIsLoading(false);
     loadData();
   };
 
   const handleLogout = () => {
     AuthManager.logout();
     setIsAuthenticated(false);
+    setIsLoading(false);
     // Clear sensitive data
     setAffiliateLinks([]);
     setStats(null);
     setShowAddForm(false);
     setEditingLink(null);
   };
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // If not authenticated, show login form
   if (!isAuthenticated) {
@@ -90,13 +118,6 @@ export const AdminDashboard: React.FC = () => {
   useEffect(() => {
     loadData();
   }, []);
-
-  const loadData = () => {
-    const links = AffiliateManager.getAffiliateLinks();
-    const statistics = AffiliateManager.getStatsSummary();
-    setAffiliateLinks(links);
-    setStats(statistics);
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

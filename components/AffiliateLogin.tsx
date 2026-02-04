@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SEO } from './SEO';
 import { Button } from './Button';
+import { AuthManager } from '../utils/authManager';
 import { Shield, Eye, EyeOff, AlertTriangle, Lock } from 'lucide-react';
 
 interface AffiliateLoginProps {
@@ -19,58 +20,16 @@ export const AffiliateLogin: React.FC<AffiliateLoginProps> = ({ onLogin }) => {
   // Security: Check if user is temporarily blocked
   useEffect(() => {
     const checkBlockStatus = () => {
-      const blockData = localStorage.getItem('affiliate_login_block');
-      if (blockData) {
-        const { blockedUntil, attemptCount } = JSON.parse(blockData);
-        const now = Date.now();
-        
-        if (now < blockedUntil) {
-          setIsBlocked(true);
-          setBlockTimeLeft(Math.ceil((blockedUntil - now) / 1000));
-          setAttempts(attemptCount);
-        } else {
-          // Block expired, clear it
-          localStorage.removeItem('affiliate_login_block');
-          setIsBlocked(false);
-          setAttempts(0);
-        }
-      }
+      const blockStatus = AuthManager.getBlockStatus();
+      setIsBlocked(blockStatus.isBlocked);
+      setBlockTimeLeft(blockStatus.timeLeft);
+      setAttempts(blockStatus.attempts);
     };
 
     checkBlockStatus();
     const interval = setInterval(checkBlockStatus, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  // Security: Hash password for comparison (simple but effective)
-  const hashPassword = (pwd: string): string => {
-    let hash = 0;
-    for (let i = 0; i < pwd.length; i++) {
-      const char = pwd.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash; // Convert to 32-bit integer
-    }
-    return hash.toString();
-  };
-
-  // Security: Rate limiting and attempt tracking
-  const handleFailedAttempt = () => {
-    const newAttempts = attempts + 1;
-    setAttempts(newAttempts);
-
-    if (newAttempts >= 5) {
-      // Block for 15 minutes after 5 failed attempts
-      const blockUntil = Date.now() + (15 * 60 * 1000);
-      localStorage.setItem('affiliate_login_block', JSON.stringify({
-        blockedUntil: blockUntil,
-        attemptCount: newAttempts
-      }));
-      setIsBlocked(true);
-      setError('Too many failed attempts. Access blocked for 15 minutes.');
-    } else {
-      setError(`Invalid password. ${5 - newAttempts} attempts remaining.`);
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -86,27 +45,19 @@ export const AffiliateLogin: React.FC<AffiliateLoginProps> = ({ onLogin }) => {
     // Security: Add artificial delay to prevent brute force
     await new Promise(resolve => setTimeout(resolve, 1000));
 
-    // Security: Compare hashed passwords
-    const correctPasswordHash = hashPassword('@DRsuperZ6');
-    const enteredPasswordHash = hashPassword(password);
+    // Use AuthManager for authentication
+    const authResult = AuthManager.authenticate(password);
 
-    if (enteredPasswordHash === correctPasswordHash) {
-      // Success: Clear any existing blocks and login
-      localStorage.removeItem('affiliate_login_block');
-      
-      // Security: Set secure session with expiration
-      const sessionData = {
-        authenticated: true,
-        timestamp: Date.now(),
-        expires: Date.now() + (2 * 60 * 60 * 1000) // 2 hours
-      };
-      localStorage.setItem('affiliate_session', JSON.stringify(sessionData));
-      
+    if (authResult.success) {
       setPassword('');
       setAttempts(0);
       onLogin();
     } else {
-      handleFailedAttempt();
+      setError(authResult.error || 'Authentication failed');
+      // Update local state with new attempt count
+      const blockStatus = AuthManager.getBlockStatus();
+      setAttempts(blockStatus.attempts);
+      setIsBlocked(blockStatus.isBlocked);
     }
 
     setIsLoading(false);
