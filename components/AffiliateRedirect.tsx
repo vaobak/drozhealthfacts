@@ -36,19 +36,21 @@ export const AffiliateRedirect: React.FC = () => {
       document.referrer
     );
 
-    // Start countdown
-    const timer = setInterval(() => {
-      setCountdown(prev => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleRedirect(link.destinationUrl);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+    // Start countdown only if autoRedirect is enabled
+    if (link.autoRedirect) {
+      const timer = setInterval(() => {
+        setCountdown(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            handleRedirect(link.destinationUrl);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-    return () => clearInterval(timer);
+      return () => clearInterval(timer);
+    }
   }, [slug, navigate]);
 
   const handleRedirect = (url: string) => {
@@ -176,11 +178,19 @@ export const AffiliateRedirect: React.FC = () => {
                 <div className="flex items-center text-blue-800 dark:text-blue-200 mb-2">
                   <Clock className="w-4 h-4 mr-2" />
                   <span className="font-medium">
-                    {isRedirecting ? 'Redirecting...' : `Redirecting in ${countdown} seconds`}
+                    {isRedirecting 
+                      ? 'Redirecting...' 
+                      : affiliateLink.autoRedirect 
+                        ? `Redirecting in ${countdown} seconds`
+                        : 'Click the button below to continue'
+                    }
                   </span>
                 </div>
                 <p className="text-sm text-blue-600 dark:text-blue-300">
-                  You'll be taken to our trusted partner's secure checkout page.
+                  {affiliateLink.autoRedirect 
+                    ? "You'll be taken to our trusted partner's secure checkout page automatically."
+                    : "Take your time to read the product details, then click when you're ready to proceed."
+                  }
                 </p>
               </div>
 
@@ -194,7 +204,12 @@ export const AffiliateRedirect: React.FC = () => {
                   disabled={isRedirecting}
                 >
                   <ExternalLink className="w-5 h-5 mr-2" />
-                  {isRedirecting ? 'Redirecting...' : 'Get This Product Now'}
+                  {isRedirecting 
+                    ? 'Redirecting...' 
+                    : affiliateLink.autoRedirect 
+                      ? 'Get This Product Now (or wait for auto-redirect)'
+                      : 'Get This Product Now'
+                  }
                 </Button>
                 
                 <Button

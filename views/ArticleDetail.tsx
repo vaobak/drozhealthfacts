@@ -210,6 +210,23 @@ export const ArticleDetail: React.FC = () => {
   // Check if this is an affiliate link and render AffiliateRedirect
   const affiliateLink = AffiliateManager.getAffiliateLinkBySlug(slug || '');
   if (affiliateLink) {
+    // Handle direct redirect type
+    if (affiliateLink.redirectType === 'direct') {
+      // Track the click
+      AffiliateManager.trackClick(
+        affiliateLink.id,
+        navigator.userAgent,
+        document.referrer
+      );
+      
+      // Immediate redirect
+      window.location.href = affiliateLink.destinationUrl;
+      
+      // Return loading state while redirecting
+      return <ArticleSkeleton />;
+    }
+    
+    // Show landing page for 'landing' type
     return <AffiliateRedirect />;
   }
 

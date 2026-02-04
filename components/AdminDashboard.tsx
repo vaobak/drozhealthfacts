@@ -38,7 +38,9 @@ export const AdminDashboard: React.FC = () => {
     discount: '',
     tags: '',
     trustBadges: '',
-    isActive: true
+    isActive: true,
+    redirectType: 'landing' as 'landing' | 'direct',
+    autoRedirect: true
   });
 
   useEffect(() => {
@@ -84,7 +86,9 @@ export const AdminDashboard: React.FC = () => {
       discount: '',
       tags: '',
       trustBadges: '',
-      isActive: true
+      isActive: true,
+      redirectType: 'landing',
+      autoRedirect: true
     });
     setShowAddForm(false);
     setEditingLink(null);
@@ -103,7 +107,9 @@ export const AdminDashboard: React.FC = () => {
       discount: link.discount || '',
       tags: link.tags.join(', '),
       trustBadges: link.trustBadges?.join(', ') || '',
-      isActive: link.isActive
+      isActive: link.isActive,
+      redirectType: link.redirectType || 'landing',
+      autoRedirect: link.autoRedirect !== undefined ? link.autoRedirect : true
     });
     setEditingLink(link);
     setShowAddForm(true);
@@ -391,6 +397,46 @@ export const AdminDashboard: React.FC = () => {
                 />
               </div>
 
+              {/* Redirect Settings */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Redirect Type
+                  </label>
+                  <select
+                    name="redirectType"
+                    value={formData.redirectType}
+                    onChange={handleInputChange}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                  >
+                    <option value="landing">Landing Page (Show product info first)</option>
+                    <option value="direct">Direct Redirect (Immediate redirect)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Landing page builds trust, direct redirect is faster
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Auto Redirect (Landing Page Only)
+                  </label>
+                  <select
+                    name="autoRedirect"
+                    value={formData.autoRedirect.toString()}
+                    onChange={(e) => setFormData(prev => ({ ...prev, autoRedirect: e.target.value === 'true' }))}
+                    disabled={formData.redirectType === 'direct'}
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+                  >
+                    <option value="true">Auto redirect after 5 seconds</option>
+                    <option value="false">Manual click only (let customer read)</option>
+                  </select>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                    Manual click gives customers time to read product details
+                  </p>
+                </div>
+              </div>
+
               <div className="flex items-center">
                 <input
                   type="checkbox"
@@ -436,6 +482,9 @@ export const AdminDashboard: React.FC = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Clicks
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                    Type
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
                     Status
@@ -484,6 +533,22 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-900 dark:text-white">
                       {link.clickCount}
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          link.redirectType === 'direct'
+                            ? 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200'
+                            : 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
+                        }`}>
+                          {link.redirectType === 'direct' ? 'Direct' : 'Landing'}
+                        </span>
+                        {link.redirectType === 'landing' && (
+                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                            {link.autoRedirect ? 'Auto 5s' : 'Manual'}
+                          </span>
+                        )}
+                      </div>
                     </td>
                     <td className="px-6 py-4">
                       <button

@@ -46,6 +46,8 @@ export interface AffiliateLink {
   price?: string;
   originalPrice?: string;
   discount?: string;
+  redirectType: 'landing' | 'direct'; // New: landing page or direct redirect
+  autoRedirect: boolean; // New: auto redirect after countdown or manual only
 }
 
 export interface ClickAnalytics {

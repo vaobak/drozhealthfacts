@@ -22,14 +22,16 @@ const DEFAULT_AFFILIATE_LINKS: AffiliateLink[] = [
     trustBadges: ['FDA Approved', 'Doctor Recommended', '30-Day Guarantee'],
     price: '$49.99',
     originalPrice: '$79.99',
-    discount: '37% OFF'
+    discount: '37% OFF',
+    redirectType: 'landing',
+    autoRedirect: false // Manual click only - let customer read first
   },
   {
     id: '2',
     slug: 'immune-booster-pro',
     title: 'Immune Booster Pro - Advanced Immunity Support',
     description: 'Strengthen your immune system with this powerful blend of vitamins and natural extracts.',
-    destinationUrl: 'https://example.com/immune-booster',
+    destinationUrl: 'https://affstore.com/immune-booster',
     productImage: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&h=300&fit=crop',
     category: 'Immune Support',
     isActive: true,
@@ -40,7 +42,9 @@ const DEFAULT_AFFILIATE_LINKS: AffiliateLink[] = [
     trustBadges: ['Clinically Tested', 'Natural Ingredients'],
     price: '$39.99',
     originalPrice: '$59.99',
-    discount: '33% OFF'
+    discount: '33% OFF',
+    redirectType: 'direct', // Direct redirect - no landing page
+    autoRedirect: true
   },
   {
     id: '3',
@@ -58,7 +62,9 @@ const DEFAULT_AFFILIATE_LINKS: AffiliateLink[] = [
     trustBadges: ['Keto Certified', 'Money Back Guarantee'],
     price: '$44.99',
     originalPrice: '$69.99',
-    discount: '36% OFF'
+    discount: '36% OFF',
+    redirectType: 'landing',
+    autoRedirect: true // Auto redirect after 5 seconds
   }
 ];
 
@@ -102,7 +108,10 @@ export class AffiliateManager {
       id: Date.now().toString(),
       clickCount: 0,
       createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
+      updatedAt: new Date().toISOString(),
+      // Set defaults for new fields if not provided
+      redirectType: link.redirectType || 'landing',
+      autoRedirect: link.autoRedirect !== undefined ? link.autoRedirect : true
     };
     
     links.push(newLink);
