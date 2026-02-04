@@ -63,36 +63,67 @@ export const DirectRedirectDebug: React.FC = () => {
 🔗 **Test URL:** 
 ${testUrl}
 
-📱 **Testing Instructions:**
-1. Copy the test URL above
-2. Open in a NEW BROWSER TAB or INCOGNITO MODE
-3. The page should IMMEDIATELY redirect to Google search
-4. You should NOT see a product landing page
-5. Test on different devices to verify global access
+📱 **CRITICAL TESTING INSTRUCTIONS:**
+1. ⚠️ **IMPORTANT**: Copy the test URL above
+2. ⚠️ **IMPORTANT**: Open in a NEW BROWSER TAB or INCOGNITO MODE
+3. ⚠️ **IMPORTANT**: Open browser console (F12) BEFORE navigating
+4. Navigate to the test URL
+5. Should see immediate redirect to Google search (NOT home page)
 
-🔍 **Expected Behavior:**
+🔍 **Expected Console Logs (FIXED VERSION):**
+✅ 🔄 Starting loadAffiliateLink for slug: ${createdLink.slug}
+✅ 📡 Fetching link from cloud database...
+✅ ✅ Cloud affiliate link loaded: {redirectType: "direct", ...}
+✅ 🔍 Link data loaded: {redirectType: "direct", destinationUrl: "..."}
+✅ 🚀 DIRECT REDIRECT DETECTED - Processing immediate redirect to: ...
+✅ 🔒 Setting hasRedirected flag to prevent duplicate redirects
+✅ 🚀 EXECUTING DIRECT REDIRECT NOW to: ...
+✅ 🔄 REDIRECT FUNCTION CALLED: {isDirect: true}
+✅ 🚀 EXECUTING DIRECT REDIRECT (same tab) to: ...
+✅ 🚀 REDIRECTING NOW to: ...
+
+❌ **If You See These Logs (STILL BROKEN):**
+❌ 🏠 Navigating to home due to cloud error
+❌ 🏠 Navigating to home - link not found
+❌ navigate('/', { replace: true })
+❌ Multiple useEffect calls
+❌ Component unmounted messages
+
+🔍 **Expected Behavior (FIXED):**
 - ✅ Immediate redirect to: ${createdLink.destinationUrl}
 - ✅ No landing page shown
-- ✅ Works on all devices
+- ✅ No "Product Not Found" error
+- ✅ Works on all devices and browsers
 - ✅ Same tab redirect (not new tab)
+- ✅ No navigation to home page
 
-🚨 **If Direct Redirect Doesn't Work:**
-1. Check browser console for errors
-2. Verify destinationUrl is valid: ${createdLink.destinationUrl}
-3. Test with different browsers
-4. Check if link exists in database
+🚨 **If Direct Redirect STILL Goes to Home Page:**
+1. Check console for "🏠 Navigating to home" messages
+2. Verify link exists: Use "Analyze Existing Direct Links" button
+3. Check Field Mapping Debug Panel for data integrity
+4. Try creating a new test link with different slug
+5. Test in completely different browser
 
 🔧 **Debug Information:**
 - Link ID: ${createdLink.id}
 - Created: ${new Date().toISOString()}
 - Redirect Type Saved: ${retrievedLink.redirectType}
 - Destination URL Saved: ${retrievedLink.destinationUrl}
+- Expected Redirect: Immediate to Google search
 
-⚠️ **Important Notes:**
-- Direct redirect should work immediately
-- No countdown timer should appear
-- Should redirect in same tab, not open new tab
-- If you see a product page, the redirect type is wrong`;
+⚠️ **FIXED ISSUES:**
+- ✅ Removed race conditions in useEffect
+- ✅ Added isMounted flag to prevent state updates after unmount
+- ✅ Improved redirect validation and error handling
+- ✅ Removed hasRedirected from useEffect dependencies
+- ✅ Enhanced direct redirect detection and execution
+- ✅ Prevented navigation to home page on successful redirects
+
+🎯 **SUCCESS CRITERIA:**
+- Direct redirect should work immediately after clicking test URL
+- Should redirect to Google search, NOT home page
+- Should work consistently across all devices and browsers
+- Console should show "DIRECT REDIRECT DETECTED" and "REDIRECTING NOW"`;
 
       setResult(report);
 

@@ -13,47 +13,63 @@ export const AffiliateRedirect: React.FC = () => {
   const [affiliateLink, setAffiliateLink] = useState<AffiliateLink | null>(null);
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [hasRedirected, setHasRedirected] = useState(false); // Prevent multiple redirects
 
   useEffect(() => {
-    if (!slug) {
-      navigate('/', { replace: true });
+    if (!slug || hasRedirected) {
+      console.log('🚫 Skipping useEffect - slug:', slug, 'hasRedirected:', hasRedirected);
       return;
     }
+
+    console.log('🔄 Starting loadAffiliateLink for slug:', slug);
+    let isMounted = true; // Prevent state updates if component unmounts
 
     const loadAffiliateLink = async () => {
       // ONLY use cloud database - no localStorage fallback
       let link: AffiliateLink | null = null;
       
       try {
+        console.log('📡 Fetching link from cloud database...');
         link = await CloudAffiliateManager.getAffiliateLinkBySlug(slug);
-        console.log('Cloud affiliate link loaded:', link);
+        console.log('✅ Cloud affiliate link loaded:', link);
       } catch (cloudError) {
-        console.error('Cloud database error:', cloudError);
-        // Show error message instead of fallback
-        navigate('/', { replace: true });
+        console.error('❌ Cloud database error:', cloudError);
+        // Only navigate to home if component is still mounted and hasn't redirected
+        if (isMounted && !hasRedirected) {
+          console.log('🏠 Navigating to home due to cloud error');
+          navigate('/', { replace: true });
+        }
         return;
       }
       
       if (!link) {
-        console.log('Affiliate link not found in cloud database for slug:', slug);
-        navigate('/', { replace: true });
+        console.log('❌ Affiliate link not found in cloud database for slug:', slug);
+        // Only navigate to home if component is still mounted and hasn't redirected
+        if (isMounted && !hasRedirected) {
+          console.log('🏠 Navigating to home - link not found');
+          navigate('/', { replace: true });
+        }
+        return;
+      }
+
+      // Only update state if component is still mounted
+      if (!isMounted) {
+        console.log('🚫 Component unmounted, skipping state updates');
         return;
       }
 
       setAffiliateLink(link);
 
-      // Track the click in cloud database only
-      try {
-        await CloudAffiliateManager.trackClick(
-          link.id,
-          navigator.userAgent,
-          document.referrer
-        );
-        console.log('Click tracked in cloud database');
-      } catch (trackError) {
-        console.error('Cloud tracking failed:', trackError);
-        // Continue without tracking rather than fallback
-      }
+      // Track the click in cloud database only (don't block redirect)
+      CloudAffiliateManager.trackClick(
+        link.id,
+        navigator.userAgent,
+        document.referrer
+      ).then(() => {
+        console.log('✅ Click tracked in cloud database');
+      }).catch(trackError => {
+        console.error('⚠️ Cloud tracking failed (non-blocking):', trackError);
+      });
 
       // Handle redirect based on type
       console.log('🔍 Link data loaded:', {
@@ -65,70 +81,124 @@ export const AffiliateRedirect: React.FC = () => {
         isActive: link.isActive
       });
 
+      // CRITICAL: Check for direct redirect IMMEDIATELY
       if (link.redirectType === 'direct') {
-        console.log('🚀 DIRECT REDIRECT DETECTED - Redirecting immediately to:', link.destinationUrl);
-        // Direct redirect - immediate redirect in same tab
-        handleRedirect(link.destinationUrl, true);
-        return;
+        console.log('🚀 DIRECT REDIRECT DETECTED - Processing immediate redirect to:', link.destinationUrl);
+        
+        // Validate destination URL before redirect
+        if (!link.destinationUrl || link.destinationUrl.trim() === '') {
+          console.error('❌ DIRECT REDIRECT FAILED: Empty destination URL');
+          if (isMounted && !hasRedirected) {
+            navigate('/', { replace: true });
+          }
+          return;
+        }
+
+        // Set redirect flag IMMEDIATELY to prevent any other navigation
+        if (isMounted && !hasRedirected) {
+          console.log('🔒 Setting hasRedirected flag to prevent duplicate redirects');
+          setHasRedirected(true);
+          
+          // Execute direct redirect with minimal delay
+          console.log('🚀 EXECUTING DIRECT REDIRECT NOW to:', link.destinationUrl);
+          handleRedirect(link.destinationUrl, true);
+        } else {
+          console.log('🚫 Direct redirect skipped - hasRedirected:', hasRedirected, 'isMounted:', isMounted);
+        }
+        return; // IMPORTANT: Exit here for direct redirects
       }
 
       console.log('🎯 LANDING PAGE MODE - Redirect type:', link.redirectType);
       // Landing page - start countdown only if autoRedirect is enabled
-      if (link.autoRedirect) {
+      if (link.autoRedirect && isMounted && !hasRedirected) {
         console.log('⏰ Starting auto-redirect countdown...');
         const timer = setInterval(() => {
           setCountdown(prev => {
             if (prev <= 1) {
               clearInterval(timer);
               console.log('⏰ Countdown finished - Redirecting to:', link.destinationUrl);
-              handleRedirect(link.destinationUrl, false);
+              if (isMounted && !hasRedirected) {
+                setHasRedirected(true);
+                handleRedirect(link.destinationUrl, false);
+              }
               return 0;
             }
             return prev - 1;
           });
         }, 1000);
 
-        return () => clearInterval(timer);
+        // Cleanup timer on unmount
+        return () => {
+          console.log('🧹 Cleaning up countdown timer');
+          clearInterval(timer);
+        };
       } else {
         console.log('🔘 Manual redirect mode - User must click button');
       }
     };
 
     loadAffiliateLink();
-  }, [slug, navigate]);
+
+    // Cleanup function
+    return () => {
+      console.log('🧹 useEffect cleanup - setting isMounted to false');
+      isMounted = false;
+    };
+  }, [slug, navigate]); // Removed hasRedirected from dependencies to prevent re-runs
 
   const handleRedirect = (url: string, isDirect: boolean = false) => {
-    setIsRedirecting(true);
     console.log('🔄 REDIRECT FUNCTION CALLED:', {
       url,
       isDirect,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      hasRedirected,
+      currentLocation: window.location.href
     });
-    
-    // Validate URL
-    if (!url || url.trim() === '') {
-      console.error('❌ REDIRECT FAILED: Empty or invalid URL');
-      alert('Redirect failed: Invalid destination URL');
+
+    // Prevent duplicate redirects
+    if (hasRedirected) {
+      console.log('🚫 Redirect already executed, ignoring duplicate call');
       return;
     }
 
+    // Validate URL first
+    if (!url || url.trim() === '') {
+      console.error('❌ REDIRECT FAILED: Empty or invalid URL');
+      return;
+    }
+
+    // Set redirecting state immediately
+    setIsRedirecting(true);
+    
     // Ensure URL has protocol
-    let redirectUrl = url;
-    if (!url.startsWith('http://') && !url.startsWith('https://')) {
-      redirectUrl = 'https://' + url;
+    let redirectUrl = url.trim();
+    if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
+      redirectUrl = 'https://' + redirectUrl;
       console.log('🔧 Added https:// protocol to URL:', redirectUrl);
     }
     
     if (isDirect) {
       console.log('🚀 EXECUTING DIRECT REDIRECT (same tab) to:', redirectUrl);
-      // For direct redirect, redirect in the same tab immediately
+      console.log('🚀 Using window.location.href for immediate redirect');
+      
+      // Set flag immediately to prevent any other redirects or navigation
+      setHasRedirected(true);
+      
+      // Direct redirect - replace current page immediately
       try {
-        window.location.href = redirectUrl;
-        console.log('✅ Direct redirect initiated');
+        console.log('🚀 REDIRECTING NOW to:', redirectUrl);
+        // Use location.replace to prevent back button issues
+        window.location.replace(redirectUrl);
       } catch (error) {
         console.error('❌ Direct redirect failed:', error);
-        alert('Redirect failed: ' + error);
+        // Fallback to href if replace fails
+        try {
+          window.location.href = redirectUrl;
+        } catch (fallbackError) {
+          console.error('❌ Fallback redirect also failed:', fallbackError);
+        }
       }
+      
     } else {
       console.log('🎯 EXECUTING LANDING PAGE REDIRECT (new tab) to:', redirectUrl);
       // For landing page redirect, open in new tab to maintain user experience
@@ -136,25 +206,34 @@ export const AffiliateRedirect: React.FC = () => {
         const newWindow = window.open(redirectUrl, '_blank', 'noopener,noreferrer');
         if (!newWindow) {
           console.error('❌ Popup blocked - trying direct redirect instead');
-          window.location.href = redirectUrl;
+          setHasRedirected(true);
+          setTimeout(() => {
+            window.location.href = redirectUrl;
+          }, 100);
         } else {
           console.log('✅ New tab opened successfully');
-          // Redirect current tab back to home after a delay
-          setTimeout(() => {
-            console.log('🏠 Redirecting current tab back to home');
-            navigate('/', { replace: true });
-          }, 1000);
+          // For landing page, don't redirect current tab to home
+          // Just mark as redirected to prevent further actions
+          setHasRedirected(true);
         }
       } catch (error) {
         console.error('❌ Landing page redirect failed:', error);
-        alert('Redirect failed: ' + error);
+        // Fallback to direct redirect
+        setHasRedirected(true);
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 100);
       }
     }
   };
 
   const handleManualRedirect = () => {
-    if (affiliateLink) {
+    if (affiliateLink && !hasRedirected) {
+      console.log('🔘 Manual redirect button clicked');
+      setHasRedirected(true);
       handleRedirect(affiliateLink.destinationUrl, false);
+    } else if (hasRedirected) {
+      console.log('🚫 Manual redirect ignored - already redirected');
     }
   };
 
