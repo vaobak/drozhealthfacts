@@ -56,18 +56,31 @@ export const AffiliateRedirect: React.FC = () => {
       }
 
       // Handle redirect based on type
+      console.log('🔍 Link data loaded:', {
+        slug: link.slug,
+        title: link.title,
+        redirectType: link.redirectType,
+        destinationUrl: link.destinationUrl,
+        autoRedirect: link.autoRedirect,
+        isActive: link.isActive
+      });
+
       if (link.redirectType === 'direct') {
+        console.log('🚀 DIRECT REDIRECT DETECTED - Redirecting immediately to:', link.destinationUrl);
         // Direct redirect - immediate redirect in same tab
         handleRedirect(link.destinationUrl, true);
         return;
       }
 
+      console.log('🎯 LANDING PAGE MODE - Redirect type:', link.redirectType);
       // Landing page - start countdown only if autoRedirect is enabled
       if (link.autoRedirect) {
+        console.log('⏰ Starting auto-redirect countdown...');
         const timer = setInterval(() => {
           setCountdown(prev => {
             if (prev <= 1) {
               clearInterval(timer);
+              console.log('⏰ Countdown finished - Redirecting to:', link.destinationUrl);
               handleRedirect(link.destinationUrl, false);
               return 0;
             }
@@ -76,6 +89,8 @@ export const AffiliateRedirect: React.FC = () => {
         }, 1000);
 
         return () => clearInterval(timer);
+      } else {
+        console.log('🔘 Manual redirect mode - User must click button');
       }
     };
 
@@ -84,19 +99,56 @@ export const AffiliateRedirect: React.FC = () => {
 
   const handleRedirect = (url: string, isDirect: boolean = false) => {
     setIsRedirecting(true);
-    console.log('Redirecting to:', url, 'Direct:', isDirect);
+    console.log('🔄 REDIRECT FUNCTION CALLED:', {
+      url,
+      isDirect,
+      timestamp: new Date().toISOString()
+    });
+    
+    // Validate URL
+    if (!url || url.trim() === '') {
+      console.error('❌ REDIRECT FAILED: Empty or invalid URL');
+      alert('Redirect failed: Invalid destination URL');
+      return;
+    }
+
+    // Ensure URL has protocol
+    let redirectUrl = url;
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+      redirectUrl = 'https://' + url;
+      console.log('🔧 Added https:// protocol to URL:', redirectUrl);
+    }
     
     if (isDirect) {
-      // For direct redirect, redirect in the same tab
-      window.location.href = url;
+      console.log('🚀 EXECUTING DIRECT REDIRECT (same tab) to:', redirectUrl);
+      // For direct redirect, redirect in the same tab immediately
+      try {
+        window.location.href = redirectUrl;
+        console.log('✅ Direct redirect initiated');
+      } catch (error) {
+        console.error('❌ Direct redirect failed:', error);
+        alert('Redirect failed: ' + error);
+      }
     } else {
+      console.log('🎯 EXECUTING LANDING PAGE REDIRECT (new tab) to:', redirectUrl);
       // For landing page redirect, open in new tab to maintain user experience
-      window.open(url, '_blank', 'noopener,noreferrer');
-      
-      // Redirect current tab back to home after a delay
-      setTimeout(() => {
-        navigate('/', { replace: true });
-      }, 1000);
+      try {
+        const newWindow = window.open(redirectUrl, '_blank', 'noopener,noreferrer');
+        if (!newWindow) {
+          console.error('❌ Popup blocked - trying direct redirect instead');
+          window.location.href = redirectUrl;
+        } else {
+          console.log('✅ New tab opened successfully');
+          // Redirect current tab back to home after a delay
+          setTimeout(() => {
+            console.log('🏠 Redirecting current tab back to home');
+            navigate('/', { replace: true });
+          }, 1000);
+        }
+      } catch (error) {
+        console.error('❌ Landing page redirect failed:', error);
+        alert('Redirect failed: ' + error);
+      }
     }
   };
 

@@ -11,6 +11,7 @@ import { AffiliateFormTest } from './AffiliateFormTest';
 import { FieldMappingDebug } from './FieldMappingDebug';
 import { ManualFormTest } from './ManualFormTest';
 import { RedirectTestPanel } from './RedirectTestPanel';
+import { DirectRedirectDebug } from './DirectRedirectDebug';
 import { 
   Plus, 
   Edit, 
@@ -318,6 +319,9 @@ export const AdminDashboard: React.FC = () => {
             <div>• Enhanced logging for troubleshooting</div>
           </div>
         </div>
+
+        {/* Direct Redirect Debug Panel */}
+        <DirectRedirectDebug />
 
         {/* Redirect Test Panel */}
         <RedirectTestPanel />
