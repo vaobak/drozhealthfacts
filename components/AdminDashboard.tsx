@@ -7,6 +7,7 @@ import { Button } from './Button';
 import { SEO } from './SEO';
 import { AffiliateLogin } from './AffiliateLogin';
 import { CloudDebugPanel } from './CloudDebugPanel';
+import { AffiliateFormTest } from './AffiliateFormTest';
 import { 
   Plus, 
   Edit, 
@@ -147,24 +148,48 @@ export const AdminDashboard: React.FC = () => {
     e.preventDefault();
     
     try {
+      console.log('Submitting form data:', formData);
+      
+      // Validate required fields
+      if (!formData.slug || !formData.title || !formData.description || !formData.destinationUrl || !formData.category) {
+        alert('Please fill in all required fields: Slug, Title, Description, Destination URL, and Category');
+        return;
+      }
+      
       const linkData = {
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
         trustBadges: formData.trustBadges.split(',').map(badge => badge.trim()).filter(Boolean)
       };
 
+      console.log('Processed link data:', linkData);
+
       if (editingLink) {
-        await CloudAffiliateManager.updateAffiliateLink(editingLink.id, linkData);
-        console.log('Updated affiliate link:', editingLink.id);
+        console.log('Updating existing link:', editingLink.id);
+        const success = await CloudAffiliateManager.updateAffiliateLink(editingLink.id, linkData);
+        if (success) {
+          console.log('Successfully updated affiliate link:', editingLink.id);
+          alert('Affiliate link updated successfully!');
+        } else {
+          throw new Error('Update failed');
+        }
       } else {
-        await CloudAffiliateManager.addAffiliateLink(linkData);
-        console.log('Added new affiliate link:', linkData.slug);
+        console.log('Adding new affiliate link');
+        const result = await CloudAffiliateManager.addAffiliateLink(linkData);
+        if (result) {
+          console.log('Successfully added new affiliate link:', result.id);
+          alert('Affiliate link added successfully!');
+        } else {
+          throw new Error('Add failed');
+        }
       }
 
       resetForm();
       await loadData();
     } catch (error) {
       console.error('Error saving affiliate link:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to save affiliate link: ${errorMessage}`);
     }
   };
 
@@ -281,6 +306,9 @@ export const AdminDashboard: React.FC = () => {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Cloud Debug Panel */}
         <CloudDebugPanel />
+        
+        {/* Form Test Panel */}
+        <AffiliateFormTest />
         
         {/* Debug info */}
         <div className="bg-green-100 dark:bg-green-900 p-4 rounded-lg mb-6">

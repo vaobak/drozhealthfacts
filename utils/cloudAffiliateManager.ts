@@ -106,6 +106,8 @@ export class CloudAffiliateManager {
     link: Omit<AffiliateLink, 'id' | 'clickCount' | 'createdAt' | 'updatedAt'>
   ): Promise<AffiliateLink | null> {
     try {
+      console.log('Adding affiliate link to cloud:', link);
+      
       const newLink = {
         ...link,
         clickCount: 0,
@@ -115,42 +117,33 @@ export class CloudAffiliateManager {
         autoRedirect: link.autoRedirect !== undefined ? link.autoRedirect : true
       };
 
+      console.log('Prepared link data for API:', newLink);
       const response = await this.apiRequest<AffiliateLink>('/affiliate-links', 'POST', newLink);
       
       if (response.success && response.data) {
-        // Also save to localStorage as backup
-        this.addLocalAffiliateLink(response.data);
+        console.log('Successfully added affiliate link to cloud:', response.data);
         return response.data;
       }
 
-      // Fallback to localStorage
-      return this.addLocalAffiliateLink({
-        ...newLink,
-        id: Date.now().toString()
-      });
+      console.error('Failed to add affiliate link to cloud:', response.error);
+      throw new Error(response.error || 'Failed to add affiliate link');
     } catch (error) {
       console.error('Error adding affiliate link to cloud:', error);
-      const linkWithId = {
-        ...link,
-        id: Date.now().toString(),
-        clickCount: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        redirectType: link.redirectType || 'landing',
-        autoRedirect: link.autoRedirect !== undefined ? link.autoRedirect : true
-      };
-      return this.addLocalAffiliateLink(linkWithId);
+      throw error; // Don't fallback, throw error
     }
   }
 
   // Update affiliate link in cloud database
   static async updateAffiliateLink(id: string, updates: Partial<AffiliateLink>): Promise<boolean> {
     try {
+      console.log('Updating affiliate link in cloud:', id, updates);
+      
       const updateData = {
         ...updates,
         updatedAt: new Date().toISOString()
       };
 
+      console.log('Prepared update data for API:', updateData);
       const response = await this.apiRequest<AffiliateLink>(
         `/affiliate-links/${id}`, 
         'PUT', 
@@ -158,16 +151,15 @@ export class CloudAffiliateManager {
       );
       
       if (response.success) {
-        // Also update localStorage as backup
-        this.updateLocalAffiliateLink(id, updateData);
+        console.log('Successfully updated affiliate link in cloud');
         return true;
       }
 
-      // Fallback to localStorage
-      return this.updateLocalAffiliateLink(id, updateData);
+      console.error('Failed to update affiliate link in cloud:', response.error);
+      throw new Error(response.error || 'Failed to update affiliate link');
     } catch (error) {
       console.error('Error updating affiliate link in cloud:', error);
-      return this.updateLocalAffiliateLink(id, updates);
+      throw error; // Don't fallback, throw error
     }
   }
 

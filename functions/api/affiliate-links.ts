@@ -128,30 +128,90 @@ async function handleGet(DB: D1Database, pathSegments: string[]): Promise<Respon
 async function handlePost(DB: D1Database, request: Request): Promise<Response> {
   try {
     const data = await request.json();
+    console.log('Received affiliate link data:', data);
+    
     const id = crypto.randomUUID();
     const now = new Date().toISOString();
     
-    await DB.prepare(`
+    // Validate required fields
+    if (!data.slug || !data.title || !data.description || !data.destinationUrl || !data.category) {
+      return new Response(JSON.stringify({ 
+        error: 'Missing required fields: slug, title, description, destinationUrl, category' 
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
+    console.log('Inserting affiliate link with data:', {
+      id, 
+      slug: data.slug, 
+      title: data.title, 
+      description: data.description, 
+      destinationUrl: data.destinationUrl,
+      productImage: data.productImage || null, 
+      category: data.category,
+      isActive: data.isActive ? 1 : 0, 
+      tags: JSON.stringify(data.tags || []), 
+      trustBadges: JSON.stringify(data.trustBadges || []),
+      price: data.price || null, 
+      originalPrice: data.originalPrice || null, 
+      discount: data.discount || null,
+      redirectType: data.redirectType || 'landing', 
+      autoRedirect: data.autoRedirect ? 1 : 0
+    });
+    
+    const result = await DB.prepare(`
       INSERT INTO affiliate_links (
         id, slug, title, description, destination_url, product_image, category,
         is_active, click_count, created_at, updated_at, tags, trust_badges,
         price, original_price, discount, redirect_type, auto_redirect
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).bind(
-      id, data.slug, data.title, data.description, data.destinationUrl,
-      data.productImage || null, data.category, data.isActive ? 1 : 0, 0,
-      now, now, JSON.stringify(data.tags || []), JSON.stringify(data.trustBadges || []),
-      data.price || null, data.originalPrice || null, data.discount || null,
-      data.redirectType || 'landing', data.autoRedirect ? 1 : 0
+      id, 
+      data.slug, 
+      data.title, 
+      data.description, 
+      data.destinationUrl,
+      data.productImage || null, 
+      data.category, 
+      data.isActive ? 1 : 0, 
+      0,
+      now, 
+      now, 
+      JSON.stringify(data.tags || []), 
+      JSON.stringify(data.trustBadges || []),
+      data.price || null, 
+      data.originalPrice || null, 
+      data.discount || null,
+      data.redirectType || 'landing', 
+      data.autoRedirect ? 1 : 0
     ).run();
+    
+    console.log('Database insert result:', result);
     
     const newLink = {
       id,
-      ...data,
+      slug: data.slug,
+      title: data.title,
+      description: data.description,
+      destinationUrl: data.destinationUrl,
+      productImage: data.productImage || null,
+      category: data.category,
+      isActive: data.isActive,
       clickCount: 0,
       createdAt: now,
-      updatedAt: now
+      updatedAt: now,
+      tags: data.tags || [],
+      trustBadges: data.trustBadges || [],
+      price: data.price || null,
+      originalPrice: data.originalPrice || null,
+      discount: data.discount || null,
+      redirectType: data.redirectType || 'landing',
+      autoRedirect: data.autoRedirect !== undefined ? data.autoRedirect : true
     };
+    
+    console.log('Returning new link:', newLink);
     
     return new Response(JSON.stringify(newLink), {
       status: 201,
@@ -159,7 +219,10 @@ async function handlePost(DB: D1Database, request: Request): Promise<Response> {
     });
   } catch (error) {
     console.error('POST Error:', error);
-    return new Response(JSON.stringify({ error: 'Failed to create affiliate link' }), {
+    return new Response(JSON.stringify({ 
+      error: 'Failed to create affiliate link', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
@@ -180,10 +243,13 @@ async function handlePut(DB: D1Database, request: Request, pathSegments: string[
     const data = await request.json();
     const now = new Date().toISOString();
     
+    console.log('Updating affiliate link:', id, 'with data:', data);
+    
     // Build dynamic update query
     const updateFields = [];
     const values = [];
     
+    if (data.slug !== undefined) { updateFields.push('slug = ?'); values.push(data.slug); }
     if (data.title !== undefined) { updateFields.push('title = ?'); values.push(data.title); }
     if (data.description !== undefined) { updateFields.push('description = ?'); values.push(data.description); }
     if (data.destinationUrl !== undefined) { updateFields.push('destination_url = ?'); values.push(data.destinationUrl); }
@@ -202,9 +268,14 @@ async function handlePut(DB: D1Database, request: Request, pathSegments: string[
     values.push(now);
     values.push(id);
     
+    console.log('Update query fields:', updateFields);
+    console.log('Update query values:', values);
+    
     const result = await DB.prepare(`
       UPDATE affiliate_links SET ${updateFields.join(', ')} WHERE id = ?
     `).bind(...values).run();
+    
+    console.log('Update result:', result);
     
     if (result.changes === 0) {
       return new Response(JSON.stringify({ error: 'Affiliate link not found' }), {
@@ -213,12 +284,19 @@ async function handlePut(DB: D1Database, request: Request, pathSegments: string[
       });
     }
     
-    return new Response(JSON.stringify({ success: true, message: 'Affiliate link updated' }), {
+    return new Response(JSON.stringify({ 
+      success: true, 
+      message: 'Affiliate link updated successfully',
+      changes: result.changes 
+    }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
   } catch (error) {
     console.error('PUT Error:', error);
-    return new Response(JSON.stringify({ error: 'Failed to update affiliate link' }), {
+    return new Response(JSON.stringify({ 
+      error: 'Failed to update affiliate link',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
