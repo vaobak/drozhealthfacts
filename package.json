@@ -14,7 +14,14 @@
     "generate-metadata": "node scripts/generate-metadata-only.js",
     "fix-frontmatter": "node scripts/fix-frontmatter.js",
     "prebuild": "npm run generate-from-json && npm run generate-sitemap",
-    "postbuild": "cp _redirects dist/ 2>/dev/null || copy _redirects dist\\ 2>nul || true"
+    "postbuild": "cp _redirects dist/ 2>/dev/null || copy _redirects dist\\ 2>nul || true",
+    "d1:create": "wrangler d1 create droz-affiliate-db",
+    "d1:migrate": "wrangler d1 migrations apply droz-affiliate-db",
+    "d1:migrate:local": "wrangler d1 migrations apply droz-affiliate-db --local",
+    "d1:query": "wrangler d1 execute droz-affiliate-db --command",
+    "d1:backup": "wrangler d1 export droz-affiliate-db --output backup.sql",
+    "deploy": "wrangler pages deploy dist",
+    "dev:local": "wrangler pages dev dist --d1 DB=droz-affiliate-db"
   },
   "dependencies": {
     "firebase": "^12.8.0",

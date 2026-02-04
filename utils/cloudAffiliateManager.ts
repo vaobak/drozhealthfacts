@@ -18,13 +18,13 @@ interface ApiResponse<T> {
 
 export class CloudAffiliateManager {
   private static config: CloudConfig = {
-    apiEndpoint: process.env.REACT_APP_API_ENDPOINT || 'https://api.drozhealthfacts.com',
+    apiEndpoint: process.env.REACT_APP_API_ENDPOINT || 'https://drozhealthfacts.com/api',
     apiKey: process.env.REACT_APP_API_KEY || 'droz-health-facts-api-key-2026',
     projectId: process.env.REACT_APP_PROJECT_ID || 'droz-health-facts'
   };
 
-  private static isCloudEnabled = process.env.REACT_APP_ENABLE_CLOUD_SYNC === 'true';
-  private static fallbackToLocal = process.env.REACT_APP_FALLBACK_TO_LOCAL !== 'false';
+  private static isCloudEnabled = process.env.REACT_APP_ENABLE_CLOUD_SYNC !== 'false';
+  private static fallbackToLocal = process.env.REACT_APP_FALLBACK_TO_LOCAL === 'true';
 
   // Headers for API requests
   private static getHeaders(): HeadersInit {
