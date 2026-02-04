@@ -28,4 +28,36 @@ export interface Topic {
   slug: string;
 }
 
-export type ViewState = 'HOME' | 'TOPICS' | 'ARTICLES' | 'ARTICLE_DETAIL' | 'CATEGORY' | 'ABOUT' | 'CONTACT' | 'HEALTH_TOOLS';
+export interface AffiliateLink {
+  id: string;
+  slug: string; // URL slug like "formula99"
+  title: string;
+  description: string;
+  destinationUrl: string; // Affiliate URL
+  productImage?: string;
+  category: string;
+  isActive: boolean;
+  clickCount: number;
+  createdAt: string;
+  updatedAt: string;
+  expiryDate?: string;
+  tags: string[];
+  trustBadges?: string[];
+  price?: string;
+  originalPrice?: string;
+  discount?: string;
+}
+
+export interface ClickAnalytics {
+  id: string;
+  linkId: string;
+  timestamp: string;
+  userAgent: string;
+  referrer: string;
+  ipAddress: string;
+  country?: string;
+  device: 'mobile' | 'desktop' | 'tablet';
+  converted?: boolean;
+}
+
+export type ViewState = 'HOME' | 'TOPICS' | 'ARTICLES' | 'ARTICLE_DETAIL' | 'CATEGORY' | 'ABOUT' | 'CONTACT' | 'HEALTH_TOOLS' | 'AFFILIATE_REDIRECT' | 'ADMIN_DASHBOARD';

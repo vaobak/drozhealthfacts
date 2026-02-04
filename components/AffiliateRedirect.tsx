@@ -1,0 +1,242 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { AffiliateManager } from '../utils/affiliateManager';
+import { AffiliateLink } from '../types';
+import { SEO } from './SEO';
+import { Button } from './Button';
+import { ExternalLink, Shield, Award, Clock, ArrowRight } from 'lucide-react';
+
+export const AffiliateRedirect: React.FC = () => {
+  const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
+  const [affiliateLink, setAffiliateLink] = useState<AffiliateLink | null>(null);
+  const [countdown, setCountdown] = useState(5);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  useEffect(() => {
+    if (!slug) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    // Find affiliate link
+    const link = AffiliateManager.getAffiliateLinkBySlug(slug);
+    
+    if (!link) {
+      navigate('/', { replace: true });
+      return;
+    }
+
+    setAffiliateLink(link);
+
+    // Track the click
+    AffiliateManager.trackClick(
+      link.id,
+      navigator.userAgent,
+      document.referrer
+    );
+
+    // Start countdown
+    const timer = setInterval(() => {
+      setCountdown(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleRedirect(link.destinationUrl);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [slug, navigate]);
+
+  const handleRedirect = (url: string) => {
+    setIsRedirecting(true);
+    // Open in new tab to maintain user experience
+    window.open(url, '_blank', 'noopener,noreferrer');
+    
+    // Redirect current tab back to home after a delay
+    setTimeout(() => {
+      navigate('/', { replace: true });
+    }, 1000);
+  };
+
+  const handleManualRedirect = () => {
+    if (affiliateLink) {
+      handleRedirect(affiliateLink.destinationUrl);
+    }
+  };
+
+  if (!affiliateLink) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+            Product Not Found
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300 mb-6">
+            The product you're looking for is not available.
+          </p>
+          <Button onClick={() => navigate('/')}>
+            Return to Homepage
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      <SEO
+        title={`${affiliateLink.title} - Dr. Oz Health Facts Recommendation`}
+        description={affiliateLink.description}
+        canonicalUrl={`https://drozhealthfacts.com/${affiliateLink.slug}`}
+        ogImage={affiliateLink.productImage}
+      />
+
+      <div className="max-w-4xl mx-auto px-4 py-12">
+        {/* Header */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center px-4 py-2 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 rounded-full text-sm font-medium mb-4">
+            <Award className="w-4 h-4 mr-2" />
+            Dr. Oz Health Facts Recommendation
+          </div>
+          
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            {affiliateLink.title}
+          </h1>
+          
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+            {affiliateLink.description}
+          </p>
+        </div>
+
+        {/* Product Card */}
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="md:flex">
+            {/* Product Image */}
+            <div className="md:w-1/2">
+              <img
+                src={affiliateLink.productImage || 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=600&h=400&fit=crop'}
+                alt={affiliateLink.title}
+                className="w-full h-64 md:h-full object-cover"
+              />
+            </div>
+
+            {/* Product Info */}
+            <div className="md:w-1/2 p-8">
+              <div className="flex items-center mb-4">
+                <span className="bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-3 py-1 rounded-full text-sm font-medium">
+                  {affiliateLink.category}
+                </span>
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+                {affiliateLink.title}
+              </h2>
+
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                {affiliateLink.description}
+              </p>
+
+              {/* Price */}
+              {affiliateLink.price && (
+                <div className="flex items-center mb-6">
+                  <span className="text-3xl font-bold text-green-600 dark:text-green-400">
+                    {affiliateLink.price}
+                  </span>
+                  {affiliateLink.originalPrice && (
+                    <span className="text-lg text-gray-500 line-through ml-3">
+                      {affiliateLink.originalPrice}
+                    </span>
+                  )}
+                  {affiliateLink.discount && (
+                    <span className="bg-red-100 dark:bg-red-900 text-red-800 dark:text-red-200 px-2 py-1 rounded ml-3 text-sm font-medium">
+                      {affiliateLink.discount}
+                    </span>
+                  )}
+                </div>
+              )}
+
+              {/* Trust Badges */}
+              {affiliateLink.trustBadges && affiliateLink.trustBadges.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {affiliateLink.trustBadges.map((badge, index) => (
+                    <div key={index} className="flex items-center bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm">
+                      <Shield className="w-3 h-3 mr-1 text-green-600" />
+                      {badge}
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Redirect Info */}
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg mb-6">
+                <div className="flex items-center text-blue-800 dark:text-blue-200 mb-2">
+                  <Clock className="w-4 h-4 mr-2" />
+                  <span className="font-medium">
+                    {isRedirecting ? 'Redirecting...' : `Redirecting in ${countdown} seconds`}
+                  </span>
+                </div>
+                <p className="text-sm text-blue-600 dark:text-blue-300">
+                  You'll be taken to our trusted partner's secure checkout page.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="space-y-3">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  onClick={handleManualRedirect}
+                  className="w-full"
+                  disabled={isRedirecting}
+                >
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  {isRedirecting ? 'Redirecting...' : 'Get This Product Now'}
+                </Button>
+                
+                <Button
+                  variant="outline"
+                  onClick={() => navigate('/')}
+                  className="w-full"
+                >
+                  Return to Dr. Oz Health Facts
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Health Expert Endorsement */}
+        <div className="bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-2xl p-8 text-center">
+          <div className="max-w-2xl mx-auto">
+            <div className="w-16 h-16 bg-green-100 dark:bg-green-900 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Award className="w-8 h-8 text-green-600 dark:text-green-400" />
+            </div>
+            
+            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              Health Expert Recommendation
+            </h3>
+            
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
+              "Based on our extensive research and analysis of health supplements, we recommend products that meet our strict criteria for safety, efficacy, and quality. This product has been carefully evaluated by our health experts."
+            </p>
+            
+            <div className="flex items-center justify-center text-sm text-gray-500 dark:text-gray-400">
+              <span>— Dr. Oz Health Facts Research Team</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Disclaimer */}
+        <div className="mt-8 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+          <p className="text-xs text-gray-500 dark:text-gray-400 text-center">
+            <strong>Disclaimer:</strong> This post contains affiliate links. We may earn a commission if you make a purchase through these links, at no additional cost to you. We only recommend products we believe in and that align with our health standards. Results may vary. Please consult with a healthcare professional before starting any new supplement regimen.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+};

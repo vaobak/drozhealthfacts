@@ -39,6 +39,8 @@ import { LabResultsInterpreterPage } from './views/LabResultsInterpreterPage';
 import { OvulationCalculatorPage } from './views/OvulationCalculatorPage';
 import { SearchResults } from './views/SearchResults';
 import { ArticleRedirect } from './components/ArticleRedirect';
+import { AffiliateRedirect } from './components/AffiliateRedirect';
+import { AdminDashboard } from './components/AdminDashboard';
 
 function App() {
   return (
@@ -99,6 +101,10 @@ function App() {
             
             {/* Contact */}
             <Route path="/contact" element={<Contact />} />
+            
+            {/* Admin Dashboard - Protected Route */}
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
             
             {/* Article Detail - Flat Structure for SEO (Must be after all static routes) */}
             <Route path="/:slug" element={<ArticleDetail />} />

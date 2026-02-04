@@ -7,6 +7,7 @@ import rehypeSanitize from 'rehype-sanitize';
 import { Article } from '../types';
 import { ARTICLES_DATA } from '../constants';
 import { loadArticleContent } from '../utils/loadArticleContent';
+import { AffiliateManager } from '../utils/affiliateManager';
 import { Button } from '../components/Button';
 import { ReadingProgress } from '../components/ReadingProgress';
 import { RelatedArticlesCarousel } from '../components/RelatedArticlesCarousel';
@@ -19,6 +20,7 @@ import { MedicalReviewBadge } from '../components/MedicalReviewBadge';
 import { TextToSpeech } from '../components/TextToSpeech';
 import { TableOfContents } from '../components/TableOfContents';
 import { ArticleSkeleton } from '../components/ArticleSkeleton';
+import { AffiliateRedirect } from '../components/AffiliateRedirect';
 import { ChevronRight, Calendar, ArrowLeft, Mail, Clock } from 'lucide-react';
 import { calculateReadingTime } from '../utils/readingTime';
 import { generateBreadcrumbSchema } from '../utils/sitemapGenerator';
@@ -48,6 +50,14 @@ export const ArticleDetail: React.FC = () => {
       
       // Get slug from URL params
       const articleSlug = slug;
+      
+      // Check if this is an affiliate link first
+      const affiliateLink = AffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
+      if (affiliateLink) {
+        // Set loading to false and let the component render AffiliateRedirect
+        setIsLoading(false);
+        return;
+      }
       
       // Find article by slug from constants (metadata only)
       const foundArticle = ARTICLES_DATA.find(a => a.slug === articleSlug);
@@ -195,6 +205,12 @@ export const ArticleDetail: React.FC = () => {
 
   if (isLoading || isLoadingContent) {
     return <ArticleSkeleton />;
+  }
+
+  // Check if this is an affiliate link and render AffiliateRedirect
+  const affiliateLink = AffiliateManager.getAffiliateLinkBySlug(slug || '');
+  if (affiliateLink) {
+    return <AffiliateRedirect />;
   }
 
   if (!article) {
