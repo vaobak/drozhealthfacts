@@ -23,6 +23,15 @@ export class CloudAffiliateManager {
     projectId: process.env.REACT_APP_PROJECT_ID || 'droz-health-facts'
   };
 
+  // NUCLEAR FIX: Use v2 endpoint to bypass cache
+  private static getApiEndpoint(endpoint: string): string {
+    // Replace affiliate-links with affiliate-links-v2 for all operations
+    if (endpoint.includes('/affiliate-links')) {
+      return endpoint.replace('/affiliate-links', '/affiliate-links-v2');
+    }
+    return endpoint;
+  }
+
   private static isCloudEnabled = process.env.REACT_APP_ENABLE_CLOUD_SYNC !== 'false';
   private static fallbackToLocal = process.env.REACT_APP_FALLBACK_TO_LOCAL === 'true';
 
@@ -42,11 +51,15 @@ export class CloudAffiliateManager {
     body?: any
   ): Promise<ApiResponse<T>> {
     try {
-      console.log(`Making ${method} request to:`, `${this.config.apiEndpoint}${endpoint}`);
+      // NUCLEAR FIX: Use v2 endpoint
+      const finalEndpoint = this.getApiEndpoint(endpoint);
+      const fullUrl = `${this.config.apiEndpoint}${finalEndpoint}`;
+      
+      console.log(`Making ${method} request to:`, fullUrl);
       console.log('Request headers:', this.getHeaders());
       console.log('Request body:', body);
       
-      const response = await fetch(`${this.config.apiEndpoint}${endpoint}`, {
+      const response = await fetch(fullUrl, {
         method,
         headers: this.getHeaders(),
         body: body ? JSON.stringify(body) : undefined
