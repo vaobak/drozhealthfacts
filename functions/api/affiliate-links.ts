@@ -46,7 +46,7 @@ export async function onRequest(context: any): Promise<Response> {
   }
   
   // Authentication (skip for GET requests to allow public access)
-  if (request.method !== 'GET' && !authenticate(request)) {
+  if (request.method !== 'GET' && request.method !== 'OPTIONS' && !authenticate(request)) {
     console.log('Authentication failed for non-GET request');
     return new Response(JSON.stringify({ error: 'Unauthorized' }), {
       status: 401,
@@ -400,14 +400,33 @@ async function handlePut(DB: D1Database, request: Request, pathSegments: string[
 // PATCH - Increment click count
 async function handlePatch(DB: D1Database, request: Request, pathSegments: string[]): Promise<Response> {
   try {
-    if (pathSegments.length < 4 || pathSegments[3] !== 'increment-clicks') {
+    // Handle both /api/affiliate-links/id/increment-clicks and /api/affiliate-links/id?action=increment-clicks
+    let id: string;
+    let action: string;
+    
+    if (pathSegments.length >= 4 && pathSegments[3] === 'increment-clicks') {
+      // /api/affiliate-links/ID/increment-clicks
+      id = pathSegments[2];
+      action = 'increment-clicks';
+    } else if (pathSegments.length >= 3) {
+      // /api/affiliate-links/ID?action=increment-clicks
+      id = pathSegments[2];
+      const url = new URL(request.url);
+      action = url.searchParams.get('action') || '';
+    } else {
       return new Response(JSON.stringify({ error: 'Invalid PATCH endpoint' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
     }
     
-    const id = pathSegments[2];
+    if (action !== 'increment-clicks') {
+      return new Response(JSON.stringify({ error: 'Invalid PATCH action' }), {
+        status: 400,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
+    
     const now = new Date().toISOString();
     
     const result = await DB.prepare(`

@@ -242,22 +242,37 @@ export const AdminDashboard: React.FC = () => {
   const handleDelete = async (id: string) => {
     if (window.confirm('Are you sure you want to delete this affiliate link?')) {
       try {
-        await CloudAffiliateManager.deleteAffiliateLink(id);
-        console.log('Deleted affiliate link:', id);
-        await loadData();
+        console.log('Attempting to delete affiliate link:', id);
+        const success = await CloudAffiliateManager.deleteAffiliateLink(id);
+        if (success) {
+          console.log('Successfully deleted affiliate link:', id);
+          alert('Affiliate link deleted successfully!');
+          await loadData();
+        } else {
+          throw new Error('Delete operation returned false');
+        }
       } catch (error) {
         console.error('Error deleting affiliate link:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(`Failed to delete affiliate link: ${errorMessage}`);
       }
     }
   };
 
   const toggleActive = async (id: string, currentStatus: boolean) => {
     try {
-      await CloudAffiliateManager.updateAffiliateLink(id, { isActive: !currentStatus });
-      console.log('Toggled active status for link:', id);
-      await loadData();
+      console.log('Toggling active status for link:', id, 'from', currentStatus, 'to', !currentStatus);
+      const success = await CloudAffiliateManager.updateAffiliateLink(id, { isActive: !currentStatus });
+      if (success) {
+        console.log('Successfully toggled active status for link:', id);
+        await loadData();
+      } else {
+        throw new Error('Update operation returned false');
+      }
     } catch (error) {
       console.error('Error toggling active status:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Failed to toggle active status: ${errorMessage}`);
     }
   };
 

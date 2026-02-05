@@ -175,19 +175,19 @@ export class CloudAffiliateManager {
   // Delete affiliate link from cloud database
   static async deleteAffiliateLink(id: string): Promise<boolean> {
     try {
+      console.log('Deleting affiliate link from cloud:', id);
       const response = await this.apiRequest(`/affiliate-links/${id}`, 'DELETE');
       
       if (response.success) {
-        // Also delete from localStorage
-        this.deleteLocalAffiliateLink(id);
+        console.log('Successfully deleted affiliate link from cloud');
         return true;
       }
 
-      // Fallback to localStorage
-      return this.deleteLocalAffiliateLink(id);
+      console.error('Failed to delete affiliate link from cloud:', response.error);
+      throw new Error(response.error || 'Failed to delete affiliate link');
     } catch (error) {
       console.error('Error deleting affiliate link from cloud:', error);
-      return this.deleteLocalAffiliateLink(id);
+      throw error; // Don't fallback, throw error
     }
   }
 
@@ -224,7 +224,7 @@ export class CloudAffiliateManager {
   // Increment click count for a link
   private static async incrementClickCount(linkId: string): Promise<void> {
     try {
-      const response = await this.apiRequest(`/affiliate-links/${linkId}?action=increment-clicks`, 'PATCH');
+      const response = await this.apiRequest(`/affiliate-links/${linkId}/increment-clicks`, 'PATCH');
       if (response.success) {
         console.log('Click count incremented for link:', linkId);
       }
