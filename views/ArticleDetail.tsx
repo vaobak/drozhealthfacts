@@ -167,6 +167,7 @@ export const ArticleDetail: React.FC = () => {
             price: '$49.99',
             originalPrice: '$79.99',
             discount: '37% OFF',
+            productImage: 'https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=600&h=400&fit=crop',
             clickCount: 0,
             createdAt: '2026-02-04 07:26:37',
             updatedAt: '2026-02-04 07:26:37'
@@ -186,6 +187,47 @@ export const ArticleDetail: React.FC = () => {
             price: '$44.99',
             originalPrice: '$69.99',
             discount: '36% OFF',
+            productImage: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&h=400&fit=crop',
+            clickCount: 0,
+            createdAt: '2026-02-04 07:26:37',
+            updatedAt: '2026-02-04 07:26:37'
+          },
+          'blood-pressure-support': {
+            id: 'sample-4',
+            slug: 'blood-pressure-support',
+            title: 'Blood Pressure Support - Natural Heart Health Formula',
+            description: 'Clinically proven ingredients to support healthy blood pressure levels naturally.',
+            destinationUrl: 'https://example.com/blood-pressure',
+            redirectType: 'landing',
+            isActive: true,
+            autoRedirect: false,
+            category: 'Heart Health',
+            tags: ['blood-pressure', 'heart-health', 'natural'],
+            trustBadges: ['Clinically Tested', 'Doctor Formulated', '60-Day Guarantee'],
+            price: '$39.95',
+            originalPrice: '$59.95',
+            discount: '33% OFF',
+            productImage: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=600&h=400&fit=crop',
+            clickCount: 0,
+            createdAt: '2026-02-04 07:26:37',
+            updatedAt: '2026-02-04 07:26:37'
+          },
+          'joint-relief-pro': {
+            id: 'sample-5',
+            slug: 'joint-relief-pro',
+            title: 'Joint Relief Pro - Advanced Joint Support',
+            description: 'Powerful combination of glucosamine, chondroitin, and turmeric for optimal joint health.',
+            destinationUrl: 'https://example.com/joint-relief',
+            redirectType: 'landing',
+            isActive: true,
+            autoRedirect: true,
+            category: 'Joint Health',
+            tags: ['joint-health', 'arthritis', 'mobility'],
+            trustBadges: ['Non-GMO', 'Third-Party Tested', '90-Day Guarantee'],
+            price: '$34.99',
+            originalPrice: '$49.99',
+            discount: '30% OFF',
+            productImage: 'https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&h=400&fit=crop',
             clickCount: 0,
             createdAt: '2026-02-04 07:26:37',
             updatedAt: '2026-02-04 07:26:37'
@@ -426,7 +468,7 @@ export const ArticleDetail: React.FC = () => {
     }
     
     // Show landing page for 'landing' type
-    return <AffiliateRedirect />;
+    return <AffiliateRedirect affiliateData={affiliateLinkData} />;
   }
 
   if (!article) {

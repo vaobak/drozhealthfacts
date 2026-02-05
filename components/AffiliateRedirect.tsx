@@ -7,15 +7,63 @@ import { SEO } from './SEO';
 import { Button } from './Button';
 import { ExternalLink, Shield, Award, Clock, ArrowRight } from 'lucide-react';
 
-export const AffiliateRedirect: React.FC = () => {
+interface AffiliateRedirectProps {
+  affiliateData?: AffiliateLink;
+}
+
+export const AffiliateRedirect: React.FC<AffiliateRedirectProps> = ({ affiliateData }) => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [affiliateLink, setAffiliateLink] = useState<AffiliateLink | null>(null);
+  const [affiliateLink, setAffiliateLink] = useState<AffiliateLink | null>(affiliateData || null);
   const [countdown, setCountdown] = useState(5);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [hasRedirected, setHasRedirected] = useState(false); // Prevent multiple redirects
 
   useEffect(() => {
+    // If we already have affiliate data from props, use it
+    if (affiliateData) {
+      console.log('🎯 Using affiliate data from props:', affiliateData);
+      setAffiliateLink(affiliateData);
+      
+      // Track the click
+      CloudAffiliateManager.trackClick(
+        affiliateData.id,
+        navigator.userAgent,
+        document.referrer
+      ).then(() => {
+        console.log('✅ Click tracked in cloud database');
+      }).catch(trackError => {
+        console.error('⚠️ Cloud tracking failed (non-blocking):', trackError);
+      });
+      
+      // Start countdown if auto-redirect is enabled
+      if (affiliateData.autoRedirect && !hasRedirected) {
+        console.log('⏰ Starting auto-redirect countdown...');
+        const timer = setInterval(() => {
+          setCountdown(prev => {
+            if (prev <= 1) {
+              clearInterval(timer);
+              console.log('⏰ Countdown finished - Redirecting to:', affiliateData.destinationUrl);
+              if (!hasRedirected) {
+                setHasRedirected(true);
+                handleRedirect(affiliateData.destinationUrl, false);
+              }
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+
+        // Cleanup timer on unmount
+        return () => {
+          console.log('🧹 Cleaning up countdown timer');
+          clearInterval(timer);
+        };
+      }
+      return;
+    }
+
+    // Fallback: Load from API if no props data (shouldn't happen normally)
     if (!slug || hasRedirected) {
       console.log('🚫 Skipping useEffect - slug:', slug, 'hasRedirected:', hasRedirected);
       return;
