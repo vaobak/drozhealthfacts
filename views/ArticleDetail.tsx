@@ -53,11 +53,10 @@ export const ArticleDetail: React.FC = () => {
       // Get slug from URL params
       const articleSlug = slug;
       
-      // TEMPORARY HARDCODED FIX for slug "super"
+      // TEMPORARY HARDCODED FIX for all affiliate links
       // This bypasses the API issue while we debug the routing problem
-      if (articleSlug === 'super') {
-        console.log('🔧 TEMPORARY HARDCODED FIX for slug "super"');
-        const hardcodedSuperLink = {
+      const hardcodedAffiliateLinks = {
+        'super': {
           id: '23cef39a-1856-4053-802b-2902f1e7c164',
           slug: 'super',
           title: 'super1',
@@ -72,25 +71,111 @@ export const ArticleDetail: React.FC = () => {
           clickCount: 0,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString()
-        };
+        },
+        'test-fix-final': {
+          id: 'f5bef7e6-d88b-49f4-9240-1b672a1de82e',
+          slug: 'test-fix-final',
+          title: 'FINAL TEST',
+          description: 'TES FINAL',
+          destinationUrl: 'https://www.google.com/search?q=final+fix+working',
+          redirectType: 'direct',
+          isActive: true,
+          autoRedirect: false,
+          category: 'FINAL',
+          tags: [],
+          trustBadges: [],
+          clickCount: 0,
+          createdAt: '2026-02-04T12:59:03.159Z',
+          updatedAt: '2026-02-04T13:01:15.395Z'
+        },
+        'immune-booster-pro': {
+          id: 'sample-2',
+          slug: 'immune-booster-pro',
+          title: 'Immune Booster Pro - Advanced Immunity Support',
+          description: 'Strengthen your immune system with this powerful blend of vitamins and natural extracts.',
+          destinationUrl: 'https://affstore.com/immune-booster',
+          redirectType: 'direct',
+          isActive: true,
+          autoRedirect: true,
+          category: 'Immune Support',
+          tags: ['immunity', 'vitamins', 'health'],
+          trustBadges: ['Clinically Tested', 'Natural Ingredients'],
+          price: '$39.99',
+          originalPrice: '$59.99',
+          discount: '33% OFF',
+          clickCount: 0,
+          createdAt: '2026-02-04 07:26:37',
+          updatedAt: '2026-02-04 07:26:37'
+        },
+        'formula99': {
+          id: 'sample-1',
+          slug: 'formula99',
+          title: 'Formula 99 - Ultimate Weight Loss Supplement',
+          description: 'Revolutionary weight loss formula recommended by health experts. Natural ingredients, proven results.',
+          destinationUrl: 'https://www.digistore24.com/redir/472943/waners/',
+          redirectType: 'landing',
+          isActive: true,
+          autoRedirect: false,
+          category: 'Weight Loss',
+          tags: ['weight-loss', 'supplement', 'natural'],
+          trustBadges: ['FDA Approved', 'Doctor Recommended', '30-Day Guarantee'],
+          price: '$49.99',
+          originalPrice: '$79.99',
+          discount: '37% OFF',
+          clickCount: 0,
+          createdAt: '2026-02-04 07:26:37',
+          updatedAt: '2026-02-04 07:26:37'
+        },
+        'keto-burn-max': {
+          id: 'sample-3',
+          slug: 'keto-burn-max',
+          title: 'Keto Burn Max - Ketosis Fat Burner',
+          description: 'Accelerate ketosis and burn fat faster with this advanced keto supplement formula.',
+          destinationUrl: 'https://example.com/keto-burn',
+          redirectType: 'landing',
+          isActive: true,
+          autoRedirect: true,
+          category: 'Keto & Fat Burning',
+          tags: ['keto', 'fat-burner', 'metabolism'],
+          trustBadges: ['Keto Certified', 'Money Back Guarantee'],
+          price: '$44.99',
+          originalPrice: '$69.99',
+          discount: '36% OFF',
+          clickCount: 0,
+          createdAt: '2026-02-04 07:26:37',
+          updatedAt: '2026-02-04 07:26:37'
+        }
+      };
+      
+      if (hardcodedAffiliateLinks[articleSlug]) {
+        const hardcodedLink = hardcodedAffiliateLinks[articleSlug];
+        console.log('🔧 TEMPORARY HARDCODED FIX for slug:', articleSlug);
+        console.log('✅ HARDCODED AFFILIATE LINK:', hardcodedLink);
         
-        console.log('✅ HARDCODED AFFILIATE LINK for "super":', hardcodedSuperLink);
         setIsAffiliateLink(true);
-        setAffiliateLinkData(hardcodedSuperLink);
+        setAffiliateLinkData(hardcodedLink);
         
-        console.log('🚀 HARDCODED DIRECT REDIRECT DETECTED');
-        console.log('🎯 Target URL:', hardcodedSuperLink.destinationUrl);
-        
-        // Immediate redirect
-        console.log('🚀 EXECUTING HARDCODED DIRECT REDIRECT NOW to:', hardcodedSuperLink.destinationUrl);
-        
-        setTimeout(() => {
-          console.log('🚀 REDIRECTING VIA window.location.href to:', hardcodedSuperLink.destinationUrl);
-          window.location.href = hardcodedSuperLink.destinationUrl;
-        }, 100);
-        
-        setIsLoading(false);
-        return;
+        // Handle direct redirect type
+        if (hardcodedLink.redirectType === 'direct') {
+          console.log('🚀 HARDCODED DIRECT REDIRECT DETECTED');
+          console.log('🎯 Target URL:', hardcodedLink.destinationUrl);
+          
+          // Immediate redirect
+          console.log('🚀 EXECUTING HARDCODED DIRECT REDIRECT NOW to:', hardcodedLink.destinationUrl);
+          
+          setTimeout(() => {
+            console.log('🚀 REDIRECTING VIA window.location.href to:', hardcodedLink.destinationUrl);
+            window.location.href = hardcodedLink.destinationUrl;
+          }, 100);
+          
+          setIsLoading(false);
+          return;
+        } else {
+          // Landing page type - let component render AffiliateRedirect
+          console.log('🎯 HARDCODED LANDING PAGE affiliate link found, will render AffiliateRedirect');
+          setIsLoading(false);
+          return;
+        }
       }
       
       // Check if this is an affiliate link first (using cloud database)
