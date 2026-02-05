@@ -25,7 +25,7 @@ export class CloudAffiliateManager {
 
   // POST-ONLY FIX: Use POST for all operations to bypass HTTP method issues
   private static getApiEndpoint(endpoint: string): string {
-    // Replace affiliate-links with affiliate-post-only
+    // Replace affiliate-links with affiliate-post-only for all operations
     if (endpoint.includes('/affiliate-links')) {
       return endpoint.replace('/affiliate-links', '/affiliate-post-only');
     }
@@ -89,7 +89,7 @@ export class CloudAffiliateManager {
   static async getAffiliateLinks(): Promise<AffiliateLink[]> {
     try {
       console.log('Fetching all affiliate links from cloud database');
-      const response = await this.apiRequest<AffiliateLink[]>('/affiliate-links');
+      const response = await this.apiRequest<AffiliateLink[]>('/affiliate-post-only');
       
       if (response.success && response.data) {
         console.log('Cloud affiliate links loaded:', response.data.length, 'links');
@@ -142,7 +142,7 @@ export class CloudAffiliateManager {
       console.log('Prepared link data for API:', newLink);
       
       // Use POST with action=create
-      const response = await this.apiRequest<AffiliateLink>('/affiliate-links', 'POST', {
+      const response = await this.apiRequest<AffiliateLink>('/affiliate-post-only', 'POST', {
         action: 'create',
         data: newLink
       });
@@ -173,7 +173,7 @@ export class CloudAffiliateManager {
       console.log('Prepared update data for API:', updateData);
       
       // Use POST with action=update instead of PUT method
-      const response = await this.apiRequest('/affiliate-links', 'POST', {
+      const response = await this.apiRequest('/affiliate-post-only', 'POST', {
         action: 'update',
         id: id,
         data: updateData
@@ -198,7 +198,7 @@ export class CloudAffiliateManager {
       console.log('Deleting affiliate link from cloud:', id);
       
       // Use POST with action=delete instead of DELETE method
-      const response = await this.apiRequest('/affiliate-links', 'POST', {
+      const response = await this.apiRequest('/affiliate-post-only', 'POST', {
         action: 'delete',
         id: id
       });
