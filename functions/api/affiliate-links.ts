@@ -38,6 +38,7 @@ export async function onRequest(context: any): Promise<Response> {
   console.log('Method:', request.method);
   console.log('URL:', request.url);
   console.log('Headers:', Object.fromEntries(request.headers.entries()));
+  console.log('Function Version: 2026-02-05-v2 - PUT/DELETE FIXED');
   
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
@@ -65,23 +66,27 @@ export async function onRequest(context: any): Promise<Response> {
     
     switch (request.method) {
       case 'GET':
-        console.log('Routing to GET handler');
+        console.log('✅ Routing to GET handler');
         return await handleGet(DB, pathSegments);
       case 'POST':
-        console.log('Routing to POST handler');
+        console.log('✅ Routing to POST handler');
         return await handlePost(DB, request);
       case 'PUT':
-        console.log('Routing to PUT handler');
+        console.log('✅ Routing to PUT handler - SHOULD WORK NOW');
         return await handlePut(DB, request, pathSegments);
       case 'DELETE':
-        console.log('Routing to DELETE handler');
+        console.log('✅ Routing to DELETE handler - SHOULD WORK NOW');
         return await handleDelete(DB, pathSegments);
       case 'PATCH':
-        console.log('Routing to PATCH handler');
+        console.log('✅ Routing to PATCH handler');
         return await handlePatch(DB, request, pathSegments);
       default:
-        console.log('Method not allowed:', request.method);
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+        console.log('❌ Method not allowed:', request.method);
+        return new Response(JSON.stringify({ 
+          error: 'Method not allowed', 
+          method: request.method,
+          allowedMethods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
+        }), {
           status: 405,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
