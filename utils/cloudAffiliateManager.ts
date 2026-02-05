@@ -23,11 +23,11 @@ export class CloudAffiliateManager {
     projectId: process.env.REACT_APP_PROJECT_ID || 'droz-health-facts'
   };
 
-  // NUCLEAR FIX: Use simple endpoint to bypass all issues
+  // POST-ONLY FIX: Use POST for all operations to bypass HTTP method issues
   private static getApiEndpoint(endpoint: string): string {
-    // Replace affiliate-links with affiliate-simple for testing
+    // Replace affiliate-links with affiliate-post-only
     if (endpoint.includes('/affiliate-links')) {
-      return endpoint.replace('/affiliate-links', '/affiliate-simple');
+      return endpoint.replace('/affiliate-links', '/affiliate-post-only');
     }
     return endpoint;
   }
@@ -166,11 +166,13 @@ export class CloudAffiliateManager {
       };
 
       console.log('Prepared update data for API:', updateData);
-      const response = await this.apiRequest<AffiliateLink>(
-        `/affiliate-links/${id}`, 
-        'PUT', 
-        updateData
-      );
+      
+      // Use POST with action=update instead of PUT method
+      const response = await this.apiRequest('/affiliate-links', 'POST', {
+        action: 'update',
+        id: id,
+        data: updateData
+      });
       
       if (response.success) {
         console.log('Successfully updated affiliate link in cloud');
@@ -189,7 +191,12 @@ export class CloudAffiliateManager {
   static async deleteAffiliateLink(id: string): Promise<boolean> {
     try {
       console.log('Deleting affiliate link from cloud:', id);
-      const response = await this.apiRequest(`/affiliate-links/${id}`, 'DELETE');
+      
+      // Use POST with action=delete instead of DELETE method
+      const response = await this.apiRequest('/affiliate-links', 'POST', {
+        action: 'delete',
+        id: id
+      });
       
       if (response.success) {
         console.log('Successfully deleted affiliate link from cloud');
