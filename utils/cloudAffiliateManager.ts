@@ -23,11 +23,11 @@ export class CloudAffiliateManager {
     projectId: process.env.REACT_APP_PROJECT_ID || 'droz-health-facts'
   };
 
-  // NUCLEAR FIX: Use v2 endpoint to bypass cache
+  // NUCLEAR FIX: Use simple endpoint to bypass all issues
   private static getApiEndpoint(endpoint: string): string {
-    // Replace affiliate-links with affiliate-links-v2 for all operations
+    // Replace affiliate-links with affiliate-simple for testing
     if (endpoint.includes('/affiliate-links')) {
-      return endpoint.replace('/affiliate-links', '/affiliate-links-v2');
+      return endpoint.replace('/affiliate-links', '/affiliate-simple');
     }
     return endpoint;
   }
