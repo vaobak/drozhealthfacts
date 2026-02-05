@@ -53,204 +53,215 @@ export const ArticleDetail: React.FC = () => {
       // Get slug from URL params
       const articleSlug = slug;
       
-      // TEMPORARY HARDCODED FIX for all affiliate links
-      // This bypasses the API issue while we debug the routing problem
-      const hardcodedAffiliateLinks = {
-        'super': {
-          id: '23cef39a-1856-4053-802b-2902f1e7c164',
-          slug: 'super',
-          title: 'super1',
-          description: 'super2',
-          destinationUrl: 'https://super.com',
-          redirectType: 'direct',
-          isActive: true,
-          autoRedirect: true,
-          category: 'super',
-          tags: [],
-          trustBadges: [],
-          clickCount: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString()
-        },
-        'test-fix-final': {
-          id: 'f5bef7e6-d88b-49f4-9240-1b672a1de82e',
-          slug: 'test-fix-final',
-          title: 'FINAL TEST',
-          description: 'TES FINAL',
-          destinationUrl: 'https://www.google.com/search?q=final+fix+working',
-          redirectType: 'direct',
-          isActive: true,
-          autoRedirect: false,
-          category: 'FINAL',
-          tags: [],
-          trustBadges: [],
-          clickCount: 0,
-          createdAt: '2026-02-04T12:59:03.159Z',
-          updatedAt: '2026-02-04T13:01:15.395Z'
-        },
-        'immune-booster-pro': {
-          id: 'sample-2',
-          slug: 'immune-booster-pro',
-          title: 'Immune Booster Pro - Advanced Immunity Support',
-          description: 'Strengthen your immune system with this powerful blend of vitamins and natural extracts.',
-          destinationUrl: 'https://affstore.com/immune-booster',
-          redirectType: 'direct',
-          isActive: true,
-          autoRedirect: true,
-          category: 'Immune Support',
-          tags: ['immunity', 'vitamins', 'health'],
-          trustBadges: ['Clinically Tested', 'Natural Ingredients'],
-          price: '$39.99',
-          originalPrice: '$59.99',
-          discount: '33% OFF',
-          clickCount: 0,
-          createdAt: '2026-02-04 07:26:37',
-          updatedAt: '2026-02-04 07:26:37'
-        },
-        'formula99': {
-          id: 'sample-1',
-          slug: 'formula99',
-          title: 'Formula 99 - Ultimate Weight Loss Supplement',
-          description: 'Revolutionary weight loss formula recommended by health experts. Natural ingredients, proven results.',
-          destinationUrl: 'https://www.digistore24.com/redir/472943/waners/',
-          redirectType: 'landing',
-          isActive: true,
-          autoRedirect: false,
-          category: 'Weight Loss',
-          tags: ['weight-loss', 'supplement', 'natural'],
-          trustBadges: ['FDA Approved', 'Doctor Recommended', '30-Day Guarantee'],
-          price: '$49.99',
-          originalPrice: '$79.99',
-          discount: '37% OFF',
-          clickCount: 0,
-          createdAt: '2026-02-04 07:26:37',
-          updatedAt: '2026-02-04 07:26:37'
-        },
-        'keto-burn-max': {
-          id: 'sample-3',
-          slug: 'keto-burn-max',
-          title: 'Keto Burn Max - Ketosis Fat Burner',
-          description: 'Accelerate ketosis and burn fat faster with this advanced keto supplement formula.',
-          destinationUrl: 'https://example.com/keto-burn',
-          redirectType: 'landing',
-          isActive: true,
-          autoRedirect: true,
-          category: 'Keto & Fat Burning',
-          tags: ['keto', 'fat-burner', 'metabolism'],
-          trustBadges: ['Keto Certified', 'Money Back Guarantee'],
-          price: '$44.99',
-          originalPrice: '$69.99',
-          discount: '36% OFF',
-          clickCount: 0,
-          createdAt: '2026-02-04 07:26:37',
-          updatedAt: '2026-02-04 07:26:37'
-        }
-      };
+      // HYBRID SOLUTION: Try API first, then fallback to hardcode
+      console.log('🔍 CHECKING AFFILIATE LINK for slug:', articleSlug);
       
-      if (hardcodedAffiliateLinks[articleSlug]) {
-        const hardcodedLink = hardcodedAffiliateLinks[articleSlug];
-        console.log('🔧 TEMPORARY HARDCODED FIX for slug:', articleSlug);
-        console.log('✅ HARDCODED AFFILIATE LINK:', hardcodedLink);
+      let affiliateLink = null;
+      
+      // Step 1: Try cloud API first
+      try {
+        console.log('📡 Step 1: Trying CloudAffiliateManager API...');
+        affiliateLink = await CloudAffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
         
-        setIsAffiliateLink(true);
-        setAffiliateLinkData(hardcodedLink);
-        
-        // Handle direct redirect type
-        if (hardcodedLink.redirectType === 'direct') {
-          console.log('🚀 HARDCODED DIRECT REDIRECT DETECTED');
-          console.log('🎯 Target URL:', hardcodedLink.destinationUrl);
-          
-          // Immediate redirect
-          console.log('🚀 EXECUTING HARDCODED DIRECT REDIRECT NOW to:', hardcodedLink.destinationUrl);
-          
-          setTimeout(() => {
-            console.log('🚀 REDIRECTING VIA window.location.href to:', hardcodedLink.destinationUrl);
-            window.location.href = hardcodedLink.destinationUrl;
-          }, 100);
-          
-          setIsLoading(false);
-          return;
+        if (affiliateLink) {
+          console.log('✅ SUCCESS: Affiliate link found via API:', affiliateLink);
         } else {
-          // Landing page type - let component render AffiliateRedirect
-          console.log('🎯 HARDCODED LANDING PAGE affiliate link found, will render AffiliateRedirect');
-          setIsLoading(false);
-          return;
+          console.log('❌ API returned null for slug:', articleSlug);
+        }
+      } catch (apiError) {
+        console.error('❌ API Error:', apiError);
+        console.log('🔄 API failed, will try fallback methods...');
+      }
+      
+      // Step 2: If API failed, try direct database query fallback
+      if (!affiliateLink) {
+        console.log('📊 Step 2: Trying direct database fallback...');
+        try {
+          // Try to fetch directly from the main endpoint and find the slug
+          const response = await fetch('https://drozhealthfacts.com/api/affiliate-links');
+          if (response.ok) {
+            const allLinks = await response.json();
+            affiliateLink = allLinks.find(link => link.slug === articleSlug);
+            
+            if (affiliateLink) {
+              console.log('✅ SUCCESS: Affiliate link found via direct database query:', affiliateLink);
+            } else {
+              console.log('❌ Slug not found in database response');
+            }
+          } else {
+            console.log('❌ Direct database query failed with status:', response.status);
+          }
+        } catch (dbError) {
+          console.error('❌ Direct database query error:', dbError);
         }
       }
       
-      // Check if this is an affiliate link first (using cloud database)
-      console.log('🔍 CHECKING AFFILIATE LINK for slug:', articleSlug);
-      
-      try {
-        const affiliateLink = await CloudAffiliateManager.getAffiliateLinkBySlug(articleSlug || '');
-        console.log('📡 CloudAffiliateManager response:', affiliateLink);
+      // Step 3: If still no link, try hardcoded fallback
+      if (!affiliateLink) {
+        console.log('🔧 Step 3: Trying hardcoded fallback...');
         
-        if (affiliateLink) {
-          console.log('✅ AFFILIATE LINK FOUND in ArticleDetail:', {
-            slug: affiliateLink.slug,
-            title: affiliateLink.title,
-            redirectType: affiliateLink.redirectType,
-            destinationUrl: affiliateLink.destinationUrl,
-            isActive: affiliateLink.isActive
-          });
+        const hardcodedAffiliateLinks = {
+          'super': {
+            id: '23cef39a-1856-4053-802b-2902f1e7c164',
+            slug: 'super',
+            title: 'super1',
+            description: 'super2',
+            destinationUrl: 'https://super.com',
+            redirectType: 'direct',
+            isActive: true,
+            autoRedirect: true,
+            category: 'super',
+            tags: [],
+            trustBadges: [],
+            clickCount: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          },
+          'test-fix-final': {
+            id: 'f5bef7e6-d88b-49f4-9240-1b672a1de82e',
+            slug: 'test-fix-final',
+            title: 'FINAL TEST',
+            description: 'TES FINAL',
+            destinationUrl: 'https://www.google.com/search?q=final+fix+working',
+            redirectType: 'direct',
+            isActive: true,
+            autoRedirect: false,
+            category: 'FINAL',
+            tags: [],
+            trustBadges: [],
+            clickCount: 0,
+            createdAt: '2026-02-04T12:59:03.159Z',
+            updatedAt: '2026-02-04T13:01:15.395Z'
+          },
+          'immune-booster-pro': {
+            id: 'sample-2',
+            slug: 'immune-booster-pro',
+            title: 'Immune Booster Pro - Advanced Immunity Support',
+            description: 'Strengthen your immune system with this powerful blend of vitamins and natural extracts.',
+            destinationUrl: 'https://affstore.com/immune-booster',
+            redirectType: 'direct',
+            isActive: true,
+            autoRedirect: true,
+            category: 'Immune Support',
+            tags: ['immunity', 'vitamins', 'health'],
+            trustBadges: ['Clinically Tested', 'Natural Ingredients'],
+            price: '$39.99',
+            originalPrice: '$59.99',
+            discount: '33% OFF',
+            clickCount: 0,
+            createdAt: '2026-02-04 07:26:37',
+            updatedAt: '2026-02-04 07:26:37'
+          },
+          'formula99': {
+            id: 'sample-1',
+            slug: 'formula99',
+            title: 'Formula 99 - Ultimate Weight Loss Supplement',
+            description: 'Revolutionary weight loss formula recommended by health experts. Natural ingredients, proven results.',
+            destinationUrl: 'https://www.digistore24.com/redir/472943/waners/',
+            redirectType: 'landing',
+            isActive: true,
+            autoRedirect: false,
+            category: 'Weight Loss',
+            tags: ['weight-loss', 'supplement', 'natural'],
+            trustBadges: ['FDA Approved', 'Doctor Recommended', '30-Day Guarantee'],
+            price: '$49.99',
+            originalPrice: '$79.99',
+            discount: '37% OFF',
+            clickCount: 0,
+            createdAt: '2026-02-04 07:26:37',
+            updatedAt: '2026-02-04 07:26:37'
+          },
+          'keto-burn-max': {
+            id: 'sample-3',
+            slug: 'keto-burn-max',
+            title: 'Keto Burn Max - Ketosis Fat Burner',
+            description: 'Accelerate ketosis and burn fat faster with this advanced keto supplement formula.',
+            destinationUrl: 'https://example.com/keto-burn',
+            redirectType: 'landing',
+            isActive: true,
+            autoRedirect: true,
+            category: 'Keto & Fat Burning',
+            tags: ['keto', 'fat-burner', 'metabolism'],
+            trustBadges: ['Keto Certified', 'Money Back Guarantee'],
+            price: '$44.99',
+            originalPrice: '$69.99',
+            discount: '36% OFF',
+            clickCount: 0,
+            createdAt: '2026-02-04 07:26:37',
+            updatedAt: '2026-02-04 07:26:37'
+          }
+        };
+        
+        if (hardcodedAffiliateLinks[articleSlug]) {
+          affiliateLink = hardcodedAffiliateLinks[articleSlug];
+          console.log('✅ SUCCESS: Affiliate link found via hardcode fallback:', affiliateLink);
+        } else {
+          console.log('❌ Slug not found in hardcode fallback either');
+        }
+      }
+      
+      // Process the affiliate link if found
+      if (affiliateLink) {
+        console.log('🎉 AFFILIATE LINK FOUND via one of the methods:', {
+          slug: affiliateLink.slug,
+          title: affiliateLink.title,
+          redirectType: affiliateLink.redirectType,
+          destinationUrl: affiliateLink.destinationUrl,
+          isActive: affiliateLink.isActive
+        });
+        
+        setIsAffiliateLink(true);
+        setAffiliateLinkData(affiliateLink);
+        
+        // Handle direct redirect type
+        if (affiliateLink.redirectType === 'direct') {
+          console.log('🚀 DIRECT REDIRECT DETECTED');
+          console.log('🎯 Target URL:', affiliateLink.destinationUrl);
           
-          setIsAffiliateLink(true);
-          setAffiliateLinkData(affiliateLink);
-          
-          // Handle direct redirect type
-          if (affiliateLink.redirectType === 'direct') {
-            console.log('🚀 DIRECT REDIRECT DETECTED from ArticleDetail');
-            console.log('🎯 Target URL:', affiliateLink.destinationUrl);
-            
-            // Validate destination URL
-            if (!affiliateLink.destinationUrl || affiliateLink.destinationUrl.trim() === '') {
-              console.error('❌ DIRECT REDIRECT FAILED: Empty destination URL');
-              console.log('🏠 Redirecting to home due to empty destination URL');
-              navigate('/', { replace: true });
-              return;
-            }
-            
-            // Track the click (non-blocking)
-            CloudAffiliateManager.trackClick(
-              affiliateLink.id,
-              navigator.userAgent,
-              document.referrer
-            ).catch(error => {
-              console.error('⚠️ Click tracking failed (non-blocking):', error);
-            });
-            
-            // Immediate redirect with validation
-            let redirectUrl = affiliateLink.destinationUrl.trim();
-            if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
-              redirectUrl = 'https://' + redirectUrl;
-              console.log('🔧 Added https:// protocol to URL:', redirectUrl);
-            }
-            
-            console.log('🚀 EXECUTING DIRECT REDIRECT NOW to:', redirectUrl);
-            
-            // Use setTimeout to ensure all logging is complete
-            setTimeout(() => {
-              console.log('🚀 REDIRECTING VIA window.location.href to:', redirectUrl);
-              window.location.href = redirectUrl;
-            }, 100);
-            
-            // Set loading to false and return to prevent further processing
-            setIsLoading(false);
+          // Validate destination URL
+          if (!affiliateLink.destinationUrl || affiliateLink.destinationUrl.trim() === '') {
+            console.error('❌ DIRECT REDIRECT FAILED: Empty destination URL');
+            console.log('🏠 Redirecting to home due to empty destination URL');
+            navigate('/', { replace: true });
             return;
           }
           
+          // Track the click (non-blocking)
+          CloudAffiliateManager.trackClick(
+            affiliateLink.id,
+            navigator.userAgent,
+            document.referrer
+          ).catch(error => {
+            console.error('⚠️ Click tracking failed (non-blocking):', error);
+          });
+          
+          // Immediate redirect with validation
+          let redirectUrl = affiliateLink.destinationUrl.trim();
+          if (!redirectUrl.startsWith('http://') && !redirectUrl.startsWith('https://')) {
+            redirectUrl = 'https://' + redirectUrl;
+            console.log('🔧 Added https:// protocol to URL:', redirectUrl);
+          }
+          
+          console.log('🚀 EXECUTING DIRECT REDIRECT NOW to:', redirectUrl);
+          
+          // Use setTimeout to ensure all logging is complete
+          setTimeout(() => {
+            console.log('🚀 REDIRECTING VIA window.location.href to:', redirectUrl);
+            window.location.href = redirectUrl;
+          }, 100);
+          
+          // Set loading to false and return to prevent further processing
+          setIsLoading(false);
+          return;
+        } else {
           // For landing page type, set loading to false and let component render AffiliateRedirect
           console.log('🎯 LANDING PAGE affiliate link found, will render AffiliateRedirect');
           setIsLoading(false);
           return;
-        } else {
-          console.log('❌ NO AFFILIATE LINK FOUND for slug:', articleSlug);
-          console.log('🔍 Will check for regular article...');
         }
-      } catch (error) {
-        console.error('❌ ERROR checking affiliate link:', error);
-        console.log('🔍 Will check for regular article due to error...');
-        // Continue to check for article if affiliate link check fails
+      } else {
+        console.log('❌ NO AFFILIATE LINK FOUND via any method for slug:', articleSlug);
+        console.log('🔍 Will check for regular article...');
       }
       
       // Find article by slug from constants (metadata only)
