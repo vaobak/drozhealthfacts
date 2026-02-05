@@ -317,20 +317,6 @@ export const AdminDashboard: React.FC = () => {
       />
 
       <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Success Status */}
-        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-8">
-          <h2 className="text-lg font-bold text-green-800 dark:text-green-200 mb-2">
-            🎉 System Status: All Operations Working
-          </h2>
-          <div className="text-green-700 dark:text-green-300 text-sm space-y-1">
-            <div>✅ Create new affiliate links</div>
-            <div>✅ Edit existing links</div>
-            <div>✅ Delete unwanted links</div>
-            <div>✅ Direct & landing page redirects</div>
-            <div>✅ Click tracking & analytics</div>
-          </div>
-        </div>
-
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
