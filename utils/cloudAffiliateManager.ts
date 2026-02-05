@@ -140,7 +140,12 @@ export class CloudAffiliateManager {
       };
 
       console.log('Prepared link data for API:', newLink);
-      const response = await this.apiRequest<AffiliateLink>('/affiliate-links', 'POST', newLink);
+      
+      // Use POST with action=create
+      const response = await this.apiRequest<AffiliateLink>('/affiliate-links', 'POST', {
+        action: 'create',
+        data: newLink
+      });
       
       if (response.success && response.data) {
         console.log('Successfully added affiliate link to cloud:', response.data);
