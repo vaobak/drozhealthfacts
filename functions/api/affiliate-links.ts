@@ -38,7 +38,8 @@ export async function onRequest(context: any): Promise<Response> {
   console.log('Method:', request.method);
   console.log('URL:', request.url);
   console.log('Headers:', Object.fromEntries(request.headers.entries()));
-  console.log('Function Version: 2026-02-05-v2 - PUT/DELETE FIXED');
+  console.log('Function Version: 2026-02-05-v3 - CACHE BUST - PUT/DELETE FIXED');
+  console.log('Timestamp:', new Date().toISOString());
   
   // Handle CORS preflight
   if (request.method === 'OPTIONS') {
