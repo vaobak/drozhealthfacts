@@ -1,6 +1,5 @@
 # Cloudflare Pages Redirects
-# API routes should be handled by Functions
-/api/*  /api/:splat  200
+# Functions will handle /api/* automatically, no redirect needed
 
 # Affiliate routes should serve the SPA
 /affiliate/*  /index.html  200
